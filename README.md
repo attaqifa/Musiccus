@@ -3,7 +3,7 @@
 <img src="public/favicon.svg" width="72" alt="Logo Musiccus">
 
 # Musiccus
-
+Repo baru
 **Pemutar musik yang bisa dilihat.**
 
 Putar lagu, lalu lihat isinya: tempo, kunci, akor per ketukan, dan bagian lagu, dibaca langsung dari suaranya.<br>
