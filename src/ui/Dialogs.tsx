@@ -51,22 +51,6 @@ export function SettingsDrawer() {
         </button>
       </div>
       <div className="drawer-body">
-        <h3>Tampilan</h3>
-        <Field
-          label="Tingkat detail"
-          hint="Detail menampilkan semuanya: rack knob lengkap di Racik, panel Pantau (meter level, loudness, spektrum, stereo; tombol O), serta angka mastering, Sungai nada, dan Keaslian file dengan spektrogram di Pahami. Sederhana hanya menyisakan preset dan kalimat biasa."
-        >
-          <Segmented
-            label="Tingkat detail"
-            value={s.detail ? 'detail' : 'simple'}
-            onChange={(v) => set({ detail: v === 'detail' })}
-            options={[
-              { value: 'simple', label: 'Sederhana' },
-              { value: 'detail', label: 'Detail' },
-            ]}
-          />
-        </Field>
-
         <h3>Pemutaran</h3>
         <Field
           label="Samakan volume antar lagu"

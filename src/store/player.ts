@@ -54,10 +54,6 @@ export interface Settings {
   headphoneOn: boolean;
   /** Blend a little of each channel into the other ear, like speakers in a room. */
   crossfeed: boolean;
-  /** Show the audiophile layer: the knob rack, recording data, and the Pantau button. */
-  detail: boolean;
-  /** The listener chose Sederhana or Detail themselves, so the default no longer applies. */
-  detailPicked: boolean;
   /** The meter bridge (Pantau) under the stage. */
   meters: boolean;
   /** Chords for playing along (short ones folded away) or every change the analysis heard. */
@@ -167,8 +163,6 @@ const DEFAULT_SETTINGS: Settings = {
   headphone: null,
   headphoneOn: true,
   crossfeed: false,
-  detail: true,
-  detailPicked: false,
   meters: false,
   chordView: 'simple',
   shuffle: false,
@@ -185,7 +179,7 @@ const SETTINGS_KEY = 'musiccus:settings';
 /** Saved settings, with values from older versions mapped to what exists now. */
 function loadSettings(): Settings {
   const saved = loadJSON<Record<string, unknown>>(SETTINGS_KEY, {});
-  const s = { ...DEFAULT_SETTINGS, ...saved } as Settings & { vuRef?: number; bloom?: number; director?: boolean };
+  const s = { ...DEFAULT_SETTINGS, ...saved } as Settings & { vuRef?: number; bloom?: number; director?: boolean; detail?: boolean; detailPicked?: boolean };
   // The Cymatics and Stereo worlds were removed; anyone who last used one lands on Nebula.
   if (!WORLD_IDS.includes(s.world)) s.world = 'nebula';
   // Older versions stored a render level. The device's own pick was saved
@@ -201,9 +195,9 @@ function loadSettings(): Settings {
   // The engine rate and ReplayGain preamp no longer have controls; keep the defaults.
   s.rateMode = DEFAULT_SETTINGS.rateMode;
   s.rgPreamp = DEFAULT_SETTINGS.rgPreamp;
-  // Detail used to start off and was saved with every other setting, so only
-  // a choice the listener made themselves keeps it off.
-  if (!s.detailPicked) s.detail = DEFAULT_SETTINGS.detail;
+  // The Sederhana/Detail switch was removed; everything is always shown.
+  delete s.detail;
+  delete s.detailPicked;
   return s;
 }
 
@@ -235,7 +229,6 @@ usePlayer.subscribe((s, prev) => {
 export const getState = usePlayer.getState;
 
 export function setSettings(patch: Partial<Settings>) {
-  if ('detail' in patch) patch = { ...patch, detailPicked: true };
   usePlayer.setState((s) => ({ settings: { ...s.settings, ...patch } }));
 }
 

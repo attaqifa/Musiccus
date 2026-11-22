@@ -43,7 +43,6 @@ export function UnderstandPanel() {
   const nowId = usePlayer((s) => s.now?.trackId);
   const { analysis, status } = useAnalysis(nowId);
   const live = useLive((s) => s.on);
-  const detail = usePlayer((s) => s.settings.detail);
   const narrow = useNarrow();
 
   let body: ReactNode;
@@ -77,7 +76,7 @@ export function UnderstandPanel() {
     body = (
       <>
         <Section id="u-music" title="Musik">
-          <MusicSummary analysis={analysis} trackId={nowId} detail={detail} />
+          <MusicSummary analysis={analysis} trackId={nowId} />
         </Section>
         <Section id="u-sheet" title="Lembar akor" note="Akor lagu per birama. Klik birama untuk memutar dari sana." closed>
           <ChordSheet analysis={analysis} trackId={nowId} />
@@ -85,35 +84,27 @@ export function UnderstandPanel() {
         <Section
           id="u-wheel"
           title="Harmoni"
-          note={
-            detail
-              ? 'Lingkaran kelima: akor yang bertetangga terdengar akrab. Garis menunjukkan arah progresi lagu ini.'
-              : 'Akor yang berdekatan di lingkaran terdengar akrab satu sama lain. Garis menunjukkan perpindahan akor di lagu ini.'
-          }
+          note="Lingkaran kelima: akor yang bertetangga terdengar akrab. Garis menunjukkan arah progresi lagu ini."
         >
           <HarmonyWheel analysis={analysis} />
         </Section>
-        {detail && (
-          <Section id="u-river" title="Sungai nada" note="Nada yang dipakai dari waktu ke waktu; makin terang makin sering. Kanan garis putih belum terdengar.">
-            <NoteRiver analysis={analysis} />
-          </Section>
-        )}
+        <Section id="u-river" title="Sungai nada" note="Nada yang dipakai dari waktu ke waktu; makin terang makin sering. Kanan garis putih belum terdengar.">
+          <NoteRiver analysis={analysis} />
+        </Section>
         <Section id="u-character" title="Karakter rekaman" note="Cara lagu ini direkam dan dimaster. Perkiraan dari analisis seluruh lagu.">
-          <CharacterCard analysis={analysis} detail={detail} showFile={!narrow && !detail} />
+          <CharacterCard analysis={analysis} />
         </Section>
         {narrow ? (
           <Section id="u-file" title="File dan jalur suara">
             <div className="file-info">
               <FileInfo />
             </div>
-            {detail && <FileEvidence analysis={analysis} trackId={nowId} compact />}
+            <FileEvidence analysis={analysis} trackId={nowId} compact />
           </Section>
         ) : (
-          detail && (
-            <Section id="u-file" title="Keaslian file" note="Bukti di balik penilaian kualitas file: spektrum rata-rata dan spektrogram seluruh lagu.">
-              <FileEvidence analysis={analysis} trackId={nowId} />
-            </Section>
-          )
+          <Section id="u-file" title="Keaslian file" note="Bukti di balik penilaian kualitas file: spektrum rata-rata dan spektrogram seluruh lagu.">
+            <FileEvidence analysis={analysis} trackId={nowId} />
+          </Section>
         )}
         <p className="analysis-foot">
           Dianalisis dalam {(analysis.elapsedMs / 1000).toFixed(1).replace('.', ',')} detik. Akor dan struktur adalah perkiraan algoritma.

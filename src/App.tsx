@@ -77,7 +77,8 @@ export default function App() {
               {!hasTracks && <Welcome />}
               {understand && hasNow && <MusicHud />}
               {hasNow && <LyricsOverlay />}
-              {understand && hasNow ? <SongMap /> : stem && hasNow ? <StemLanes /> : <NowPlayingOverlay />}
+              {/* Racik's stage is just the visuals and lyrics; the title is already in the transport. */}
+              {understand && hasNow ? <SongMap /> : stem && hasNow ? <StemLanes /> : shape ? null : <NowPlayingOverlay />}
               {meters && <MeterBridge />}
             </>
           )}

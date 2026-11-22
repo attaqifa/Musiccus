@@ -95,7 +95,6 @@ function FormatPill() {
 export function TopBar() {
   const ui = usePlayer((s) => s.ui);
   const hasTracks = usePlayer((s) => s.order.length > 0);
-  const detail = usePlayer((s) => s.settings.detail);
   const meters = usePlayer((s) => s.settings.meters);
   const hasNow = usePlayer((s) => s.now !== null);
   return (
@@ -141,7 +140,7 @@ export function TopBar() {
         >
           <PanelRight size={17} />
         </button>
-        {hasNow && (detail || meters) && (
+        {hasNow && (
           <button
             className={cls('icon-btn', meters && 'on')}
             onClick={() => setSettings({ meters: !meters })}

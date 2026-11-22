@@ -10,7 +10,6 @@ export function FileInfo() {
   const now = usePlayer((s) => s.now);
   const track = usePlayer((s) => (s.now ? s.tracks[s.now.trackId] : undefined));
   const { analysis, status } = useAnalysis(now?.trackId);
-  const detail = usePlayer((s) => s.settings.detail);
   if (!now || !track || track.live) return null;
   const m = track.meta;
   const bits = m?.bitsPerSample ? `${m.bitsPerSample}-bit` : null;
@@ -39,7 +38,7 @@ export function FileInfo() {
           </div>
         ))}
       </dl>
-      <SignalPath detail={detail} />
+      <SignalPath />
     </>
   );
 }

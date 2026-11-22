@@ -4,6 +4,7 @@ import { useAnalysis } from '../analysis/manager';
 import { keyName } from '../analysis/theory';
 import { hub } from '../audio/hub';
 import { isChunkError, reloadForUpdate } from '../lib/update';
+import { songLabel } from '../library/display';
 import { renderQuality, setSettings, usePlayer, type WorldId } from '../store/player';
 import type { VisualEngine } from '../visual/VisualEngine';
 import { cls } from './hooks';
@@ -107,13 +108,15 @@ export function NowPlayingOverlay() {
   const { analysis } = useAnalysis(track?.live ? undefined : now?.trackId);
   if (!now || !track) return null;
   const m = track.meta;
-  const title = m?.title || track.name.replace(/\.[^.]+$/, '');
-  const sub = [m?.artist, m?.album].filter(Boolean).join(', ') + (m?.year ? ` (${m.year})` : '');
+  const { title, artist } = songLabel(track);
+  const sub = [artist, m?.album].filter(Boolean).join(', ') + (m?.year ? ` (${m.year})` : '');
   return (
     <div className="np-overlay" key={now.trackId}>
       <p className="np-eyebrow">{track.live ? 'Live dari tab' : analysis ? `${keyName(analysis.key)}, ${Math.round(analysis.bpm)} BPM` : ''}</p>
-      <h1 className="np-title">{title}</h1>
-      <p className="np-sub">{track.live ? m?.artist || 'Suara dari tab browser' : sub || track.path}</p>
+      <h1 className="np-title" title={title}>
+        {title}
+      </h1>
+      <p className="np-sub">{track.live ? artist || 'Suara dari tab browser' : sub}</p>
     </div>
   );
 }

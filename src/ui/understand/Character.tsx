@@ -1,14 +1,12 @@
 import type { Analysis } from '../../analysis/types';
 import { formatLufs } from '../../lib/format';
-import { usePlayer } from '../../store/player';
-import { fileQuality } from '../fileQuality';
 import { cls } from '../hooks';
 import { MasteringExtras } from './FileEvidence';
 
 /**
  * "Karakter rekaman": what the mastering numbers mean, in a few plain
- * sentences. In the detail layer each sentence also shows the number behind
- * it, and the numbers that have no sentence follow as a small grid.
+ * sentences. Each sentence also shows the number behind it, and the numbers
+ * that have no sentence follow as a small grid.
  */
 
 interface Trait {
@@ -16,7 +14,7 @@ interface Trait {
   verdict: string;
   note: string;
   warn?: boolean;
-  /** The measurement behind the sentence, shown in the detail layer. */
+  /** The measurement behind the sentence. */
   figure?: string;
 }
 
@@ -127,16 +125,9 @@ function toneText(a: Analysis): Trait | null {
   return { label, verdict: 'Seimbang', note: 'Bass, tengah, dan treble terdengar wajar tanpa ada yang mendominasi.' };
 }
 
-/**
- * `showFile`: include the file-quality line, when no other part of the panel
- * shows it. `detail`: add the numbers behind each sentence.
- */
-export function CharacterCard({ analysis, detail, showFile }: { analysis: Analysis; detail: boolean; showFile: boolean }) {
-  const meta = usePlayer((s) => (s.now ? s.tracks[s.now.trackId]?.meta : undefined));
-  const rate = usePlayer((s) => s.now?.sourceRate);
-  const q = showFile ? fileQuality(analysis, meta, rate) : null;
-  const file: Trait | null = q && { label: 'Kualitas file', verdict: q.verdict, note: q.note, warn: q.tone === 'warn' };
-  const traits = [dynamics(analysis), loudness(analysis), stereo(analysis), tone(analysis), file].filter((t): t is Trait => !!t);
+/** Each sentence with the number behind it; file quality has its own section. */
+export function CharacterCard({ analysis }: { analysis: Analysis }) {
+  const traits = [dynamics(analysis), loudness(analysis), stereo(analysis), tone(analysis)].filter((t): t is Trait => !!t);
   return (
     <div className="character-card">
       <dl className="character">
@@ -146,14 +137,14 @@ export function CharacterCard({ analysis, detail, showFile }: { analysis: Analys
             <dd>
               <span className="trait-line">
                 <b>{t.verdict}</b>
-                {detail && t.figure && <em className="trait-fig">{t.figure}</em>}
+                {t.figure && <em className="trait-fig">{t.figure}</em>}
               </span>
               <span>{t.note}</span>
             </dd>
           </div>
         ))}
       </dl>
-      {detail && <MasteringExtras m={analysis.mastering} />}
+      <MasteringExtras m={analysis.mastering} />
     </div>
   );
 }

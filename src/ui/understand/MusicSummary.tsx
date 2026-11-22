@@ -55,7 +55,7 @@ function NextChord({ analysis }: { analysis: Analysis }) {
   );
 }
 
-export function MusicSummary({ analysis, trackId, detail }: { analysis: Analysis; trackId: string; detail: boolean }) {
+export function MusicSummary({ analysis, trackId }: { analysis: Analysis; trackId: string }) {
   const chord = useHubValue((s) => s.music.chord);
   const section = useHubValue((s) => s.music.section);
   const next = useHubValue((s) => s.music.nextSection);
@@ -81,11 +81,7 @@ export function MusicSummary({ analysis, trackId, detail }: { analysis: Analysis
     <div className="music-summary">
       <div
         className="ms-cell"
-        title={
-          detail
-            ? 'Kunci nada lagu: nada yang dimainkan (dipisah dari harmoniknya, bass dan treble sendiri-sendiri) dicocokkan dengan profil tiap kunci, lalu diperiksa dengan akor mana yang jadi rumah dan akor mana yang mengarah ke sana.'
-            : 'Nada dasar lagu. Persentase menunjukkan seberapa yakin analisisnya.'
-        }
+        title="Kunci nada lagu: nada yang dimainkan (dipisah dari harmoniknya, bass dan treble sendiri-sendiri) dicocokkan dengan profil tiap kunci, lalu diperiksa dengan akor mana yang jadi rumah dan akor mana yang mengarah ke sana."
       >
         <span className="ms-label">
           Kunci
@@ -111,23 +107,17 @@ export function MusicSummary({ analysis, trackId, detail }: { analysis: Analysis
           ) : (
             <>keyakinan {Math.round(key.confidence * 100)}%</>
           )}
-          {detail && (
-            <span
-              className="tuning"
-              title="Nada acuan lagu ini. Standar modern A4 = 440 Hz, tapi sebagian lagu disetel lebih rendah atau tinggi, misalnya 432 Hz. Musiccus menyesuaikan diri dulu sebelum membaca kunci dan akor."
-            >
-              A4 {tuningHz(analysis.tuningCents)} Hz
-            </span>
-          )}
+          <span
+            className="tuning"
+            title="Nada acuan lagu ini. Standar modern A4 = 440 Hz, tapi sebagian lagu disetel lebih rendah atau tinggi, misalnya 432 Hz. Musiccus menyesuaikan diri dulu sebelum membaca kunci dan akor."
+          >
+            A4 {tuningHz(analysis.tuningCents)} Hz
+          </span>
         </span>
       </div>
       <div
         className="ms-cell"
-        title={
-          detail
-            ? 'Tempo dari autokorelasi onset, lalu beat grid dari dynamic programming.'
-            : 'Jumlah ketukan per menit. Terasa dua kali terlalu cepat atau lambat? Pakai ½× atau 2×.'
-        }
+        title="Tempo dari autokorelasi onset, lalu beat grid dari dynamic programming."
       >
         <span className="ms-label">Tempo</span>
         <span className="ms-value">
@@ -161,7 +151,7 @@ export function MusicSummary({ analysis, trackId, detail }: { analysis: Analysis
         <span className="ms-chord">
           <span className="ms-chord-name">{name}</span>
           {chord?.fixed && <span className="ms-fixed">dikoreksi</span>}
-          {detail && numeral && <span className="ms-numeral">{numeral}</span>}
+          {numeral && <span className="ms-numeral">{numeral}</span>}
           <NextChord analysis={analysis} />
         </span>
         <span className="ms-role">{chord ? chordRole(chord, key) : 'Tidak ada akor yang jelas di sini.'}</span>

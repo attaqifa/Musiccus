@@ -115,7 +115,7 @@ function useSignalPath(): Step[] | null {
 }
 
 /** What Musiccus does to the sound between the file and the browser's output. */
-export function SignalPath({ detail }: { detail: boolean }) {
+export function SignalPath() {
   const steps = useSignalPath();
   if (!steps) return null;
   const changed = steps.filter((s) => s.state === 'changed').map((s) => s.name);
@@ -135,17 +135,15 @@ export function SignalPath({ detail }: { detail: boolean }) {
         {headline}
       </p>
       {sub && <p className="sp-sub">{sub}</p>}
-      {detail && (
-        <ol className="sp-steps">
-          {steps.map((s) => (
-            <li key={s.name} className={cls('sp-step', s.state)} title={STATE_LABEL[s.state]}>
-              <span className="sp-name">{s.name}</span>
-              <span className="sp-value">{s.value}</span>
-              {s.note && <span className="sp-note">{s.note}</span>}
-            </li>
-          ))}
-        </ol>
-      )}
+      <ol className="sp-steps">
+        {steps.map((s) => (
+          <li key={s.name} className={cls('sp-step', s.state)} title={STATE_LABEL[s.state]}>
+            <span className="sp-name">{s.name}</span>
+            <span className="sp-value">{s.value}</span>
+            {s.note && <span className="sp-note">{s.note}</span>}
+          </li>
+        ))}
+      </ol>
       <p className="sp-foot">
         Setelah keluar dari browser, mixer sistem (volume, efek suara, codec Bluetooth) masih bisa mengubah suara di luar kendali Musiccus.
       </p>

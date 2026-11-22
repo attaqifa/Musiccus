@@ -1,5 +1,6 @@
 import { ListMusic, Moon, Repeat, Repeat1, Shuffle, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { songLabel } from '../library/display';
 import { clearUpNext, cycleRepeat, playQueueAt, playUpNext, removeUpNext, setShuffle } from '../store/controller';
 import { setUi, usePlayer, type RepeatMode, type SleepTimer, type Track } from '../store/player';
 import { setSleep, SLEEP_CHOICES } from '../store/sleep';
@@ -8,7 +9,7 @@ import { cls } from './hooks';
 /** How many coming songs the popover lists; the rest is a count. */
 const SHOW = 30;
 
-const titleOf = (t: Track | undefined) => (t ? t.meta?.title || t.name.replace(/\.[^.]+$/, '') : 'Lagu tidak ditemukan');
+const titleOf = (t: Track | undefined) => (t ? songLabel(t).title : 'Lagu tidak ditemukan');
 
 const REPEAT_LABEL: Record<RepeatMode, string> = { off: 'Ulang: mati', all: 'Ulang: semua', one: 'Ulang: satu lagu' };
 

@@ -2,6 +2,7 @@ import { LoaderCircle, MicVocal, Pause, Play, SkipBack, SkipForward, Square, Vol
 import { useRef } from 'react';
 import { engine } from '../audio/engine';
 import { formatTime } from '../lib/format';
+import { songLabel } from '../library/display';
 import { useLive } from '../live/store';
 import { useLyrics } from '../lyrics/lyrics';
 import { next, prev, setLiveMonitor, setVolume, stopListening, toggleMute, togglePlay } from '../store/controller';
@@ -39,11 +40,12 @@ export function Transport() {
   });
 
   const m = track?.meta;
-  const title = m?.title || track?.name.replace(/\.[^.]+$/, '') || 'Belum ada lagu';
+  const label = track ? songLabel(track) : null;
+  const title = label?.title || 'Belum ada lagu';
   const sub = live
-    ? m?.artist || 'Suara dari tab browser'
+    ? label?.artist || 'Suara dari tab browser'
     : track
-      ? [m?.artist, m?.album].filter(Boolean).join(' — ') || track.path
+      ? [label?.artist, m?.album].filter(Boolean).join(' — ')
       : 'Pilih lagu dari library';
   const playing = status === 'playing';
   // Without monitoring the tab plays its own sound, so the volume belongs to the tab.

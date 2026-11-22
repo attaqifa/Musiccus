@@ -71,13 +71,12 @@ Panduan lengkap semua fitur. Ringkasannya ada di [README](../README.md).
 - Song Map di bawah panggung: bagian lagu, lajur akor, dan kurva energi. Klik untuk melompat.
 - HUD akor besar dengan titik ketukan dan hitung mundur ke bagian berikutnya; Harmony Wheel di panel.
 - Panel berurutan Musik, Harmoni, Karakter rekaman, lalu file. Setiap bagian punya satu kalimat penjelasan yang terlihat langsung, jadi tetap terbaca di layar sentuh.
-- **Karakter rekaman**: angka mastering diterjemahkan ke kalimat biasa: seberapa dinamis lagunya, seberapa keras dibanding standar streaming, seberapa lebar stereonya, warna suaranya (hangat, terang, seimbang), dan kualitas filenya. Batas warna suara disetel dari pengukuran rekaman sungguhan, dari rock 1970-an sampai pop 2026: master yang wajar terbaca Seimbang, dan label lain hanya muncul kalau jelas menyimpang.
+- **Karakter rekaman**: angka mastering diterjemahkan ke kalimat biasa: seberapa dinamis lagunya, seberapa keras dibanding standar streaming, seberapa lebar stereonya, warna suaranya (hangat, terang, seimbang). Batas warna suara disetel dari pengukuran rekaman sungguhan, dari rock 1970-an sampai pop 2026: master yang wajar terbaca Seimbang, dan label lain hanya muncul kalau jelas menyimpang.
 - Di layar sempit (bar atas menyembunyikan label format), bagian **File dan jalur suara** di panel ini menunjukkan kualitas file dan jalur suaranya.
 
 ### Racik (tombol `B`)
 
 - **Preset satu klik**: Asli, Bass lebih tebal, Vokal lebih jelas, Lebih lapang, Aula konser, Slowed + reverb, Sped up, Dengar pelan (untuk volume kecil di malam hari), dan Lo-fi. Setiap preset mulai dari suara asli, jadi tidak saling menumpuk.
-- **Sesuaikan**: kecepatan 50–150% (nadanya tetap, atau ikut berubah seperti piringan hitam), nada ±6 semitone, bass, kejernihan, dan gema. Klik ganda slider untuk mengembalikannya.
 - **Dengar asli** (tombol `A`): bandingkan racikan dengan suara aslinya. Klik untuk berganti, atau tahan lalu lepas untuk mendengar aslinya sesaat. Volume suara asli disamakan dengan racikan (diukur K-weighted selama lagu diputar), supaya yang terdengar lebih bagus bukan sekadar yang lebih keras.
 - **Racikan saya**: simpan setelan yang Anda suka dengan nama sendiri (sampai 6), lalu pakai lagi dengan satu klik dari daftar preset.
 - **Simpan sebagai file**: lagu dengan racikan Anda disimpan sebagai WAV, misalnya versi slowed + reverb sendiri.
@@ -94,11 +93,11 @@ Panduan lengkap semua fitur. Ringkasannya ada di [README](../README.md).
 - Stem vokal juga mempertajam waktu per kata di lirik.
 - Hasil AI disimpan (maksimal 2,5 GB), jadi lagu yang pernah dipisahkan siap lagi dalam setengah detik.
 
-### Mode Detail (aktif sejak awal)
+### Rincian lengkap
 
-Mode Detail menyala sejak pertama kali dibuka, supaya semua kemampuan Musiccus langsung terlihat. Yang ingin tampilan lebih tenang bisa memilih **Sederhana** lewat sakelar di atas panel Racik atau di Pengaturan → Tampilan; pilihan itu diingat. Mode Detail menambah tiga hal:
+Semua kemampuan Musiccus selalu terlihat. Selain preset dan kalimat biasa, ada tiga lapisan rincian:
 
-- **Rack knob** di Racik, menggantikan slider sederhana. Setiap modul adalah kartu dengan lampu (menyala = sedang mengubah suara) dan ringkasan setelannya; klik judulnya untuk menyalakan atau mematikan.
+- **Rack knob** di Racik, di bawah preset. Setiap modul adalah kartu dengan lampu (menyala = sedang mengubah suara) dan ringkasan setelannya; klik judulnya untuk menyalakan atau mematikan.
   - Nada dan kecepatan (semitone, cent, tempo 50–150%, jaga nada atau gaya piringan hitam, jaga warna vokal), dengan BPM dan kunci hasil perubahan.
   - Filter sweep low-pass/high-pass dengan resonansi.
   - EQ parametrik 8 band dengan kurva respons yang dihitung dari filter Web Audio sungguhan, digambar di atas spektrum rata-rata lagu. Seret titiknya untuk frekuensi dan gain, scroll untuk Q, atau pakai panah (Shift untuk langkah besar).

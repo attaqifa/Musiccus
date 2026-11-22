@@ -1,4 +1,5 @@
 import { engine } from '../audio/engine';
+import { songLabel } from '../library/display';
 import { readCover } from '../library/metadata';
 import { getFile, next, prev, seek, seekBy, togglePlay } from '../store/controller';
 import { getState, usePlayer, type Track } from '../store/player';
@@ -96,8 +97,9 @@ let metaKey = '';
 
 function setMetadata(t: Track) {
   const m = t.meta;
-  const title = m?.title || t.name.replace(/\.[^.]+$/, '');
-  const artist = m?.artist || (t.synth ? 'Musiccus' : '');
+  const label = songLabel(t);
+  const title = label.title;
+  const artist = label.artist || (t.synth ? 'Musiccus' : '');
   const album = m?.album || '';
   const key = `${t.id}\n${title}\n${artist}\n${album}`;
   if (key === metaKey) return;

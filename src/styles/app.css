@@ -1075,9 +1075,9 @@ body.idle .stage-exit {
 
 .np-overlay {
   position: absolute;
-  left: 18px;
+  left: calc(18px + var(--stage-l, 0px));
   bottom: 14px;
-  max-width: min(760px, 92%);
+  max-width: min(720px, calc(92% - var(--stage-l, 0px) - var(--stage-r, 0px)));
   pointer-events: none;
   text-shadow: 0 2px 30px rgba(0, 0, 0, 0.7);
 }
@@ -1119,16 +1119,26 @@ body.idle .stage-exit {
 .np-title {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(40px, 5.4vw, 88px);
-  line-height: 0.98;
-  letter-spacing: -0.03em;
+  font-size: clamp(32px, 3.8vw, 60px);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
   margin: 8px 0 10px;
   text-wrap: balance;
+  /* Long titles stop at two lines instead of filling the stage. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  padding-bottom: 0.06em;
   animation: rise 0.9s 0.08s var(--ease-out) both;
 }
 
 .np-sub {
   font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--ink-2);
   animation: rise 0.9s 0.16s var(--ease-out) both;
 }
@@ -2387,7 +2397,7 @@ button.q-row:hover {
 .music-hud {
   position: absolute;
   top: 46px;
-  left: 14px;
+  left: calc(14px + var(--stage-l, 0px));
   pointer-events: none;
   text-shadow: 0 2px 26px rgba(0, 0, 0, 0.75);
   animation: rise 0.8s var(--ease-out) both;
@@ -2473,8 +2483,8 @@ button.q-row:hover {
 
 .songmap {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: var(--stage-l, 0px);
+  right: var(--stage-r, 0px);
   bottom: 0;
   padding: 10px 12px;
   border-radius: var(--r-l);
@@ -3070,102 +3080,96 @@ button.q-row:hover {
 }
 
 /* Racik: presets first, then a few plain-language sliders. */
+/*
+ * The app's own switch, the recessed track of the mode and world switches,
+ * laid out as a 3×3 grid: one soft tray, borderless names, the picked one lit.
+ */
 .preset-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  padding: 3px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .preset {
-  display: grid;
-  gap: 3px;
-  align-content: start;
-  min-height: 64px;
-  padding: 10px 12px;
-  border-radius: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 6px 8px;
+  border-radius: 11px;
   border: 1px solid transparent;
-  background: var(--raised);
-  text-align: left;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.2s ease, color 0.15s ease;
 }
 
 .preset:hover {
-  background: var(--raised-2);
+  color: var(--ink);
 }
 
 .preset.on {
-  border-color: var(--signal-line);
-  background: var(--signal-dim);
-}
-
-.preset-name {
-  font-size: 13px;
-  font-weight: 500;
   color: var(--ink);
+  background: rgb(var(--signal-rgb) / 0.14);
 }
 
-.preset-hint {
-  font-size: 12px;
-  line-height: 1.35;
-  color: var(--ink-3);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+/* A saved mix: a faint dashed outline until picked, with its own delete cross. */
+.preset.mine {
+  padding: 0;
+  border: 1px dashed var(--line-2);
+}
+
+.preset.mine.on {
+  border-color: transparent;
+}
+
+.preset.mine > button:first-child {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  padding: 6px 22px 6px 10px;
+  color: inherit;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.preset.on .preset-hint {
-  color: var(--ink-2);
-}
-
-.sound-adjust {
+.mine-del {
+  position: absolute;
+  right: 3px;
   display: grid;
-  gap: 14px;
-}
-
-.sound-slider {
-  display: grid;
-  gap: 4px;
-}
-
-.ss-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--ink-2);
-}
-
-.ss-head output {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink);
-}
-
-.sound-check {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-top: -6px;
-  font-size: 13px;
-  line-height: 1.4;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
   color: var(--ink-3);
-  cursor: pointer;
 }
 
-.sound-slider.off,
-.sound-check.off {
-  opacity: 0.45;
+.mine-del:hover {
+  color: var(--ink);
+  background: var(--raised-2);
 }
 
-.sound-check input {
-  margin-top: 2px;
-  accent-color: var(--signal);
-}
-
-.sound-readout {
-  font-family: var(--font-mono);
+.preset-note {
+  margin: 10px 4px 0;
   font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.preset-note b {
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.preset-note em {
+  font-style: normal;
   color: var(--ink-3);
 }
 
@@ -3449,43 +3453,6 @@ button.q-row:hover {
   color: var(--ink);
 }
 
-.preset.mine {
-  position: relative;
-  padding: 0;
-  border-style: dashed;
-}
-
-.preset.mine.on {
-  border-style: solid;
-}
-
-.preset-pick {
-  display: grid;
-  gap: 3px;
-  align-content: start;
-  width: 100%;
-  min-height: 62px;
-  padding: 9px 28px 9px 10px;
-  text-align: left;
-}
-
-.preset-del {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--r-s);
-  color: var(--ink-3);
-}
-
-.preset-del:hover {
-  color: var(--ink);
-  background: var(--raised-2);
-}
-
 .mix-form {
   display: flex;
   flex-wrap: wrap;
@@ -3514,16 +3481,6 @@ button.q-row:hover {
   font-size: 13px;
   color: var(--ink-2);
   cursor: pointer;
-}
-
-/* Racik, mode Detail: the knob rack. */
-.studio-mode {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 2px 2px 12px;
-  font-size: 13px;
-  color: var(--ink-3);
 }
 
 /* minmax(0, 1fr): the cards fit the panel; long summaries ellipsize instead of widening it. */
@@ -4050,10 +4007,10 @@ button.fx-head:focus-visible {
 
 .center > .lyrics {
   position: absolute;
-  left: 50%;
+  left: calc(50% + (var(--stage-l, 0px) - var(--stage-r, 0px)) / 2);
   top: 26%;
   transform: translateX(-50%);
-  width: min(900px, 86%);
+  width: min(900px, calc(86% - var(--stage-l, 0px) - var(--stage-r, 0px)));
   display: grid;
   justify-items: center;
   gap: 10px;
@@ -4174,9 +4131,25 @@ button.fx-head:focus-visible {
   height: 26px;
 }
 
-.mode-pahami .center > .lyrics,
 .mode-bentuk .center > .lyrics {
   top: 40%;
+}
+
+/* Pahami: centred in the band between the HUD (top) and the Song Map (bottom). */
+.mode-pahami .center > .lyrics {
+  top: calc(50% + 26px);
+  transform: translate(-50%, -50%);
+}
+
+/* Not enough height for three lines between the HUD and the map: the sung line only. */
+@media (max-height: 700px) {
+  .mode-pahami .ly-prev,
+  .mode-pahami .ly-next {
+    display: none;
+  }
+  .mode-pahami .kinetic .ly-cur {
+    font-size: clamp(22px, 3vw, 34px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4665,8 +4638,8 @@ button.fx-head:focus-visible {
 
 .stem-lanes {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: var(--stage-l, 0px);
+  right: var(--stage-r, 0px);
   bottom: 0;
   padding: 10px 12px;
   border-radius: var(--r-l);
@@ -5116,6 +5089,14 @@ button.fx-head:focus-visible {
     justify-self: end;
     --drawer-from: 16px;
   }
+  /* Between phone and desktop a drawer covers part of the stage: the title,
+     lyrics, HUD and lanes keep to the part that stays visible. */
+  .app.with-library .center {
+    --stage-l: 372px;
+  }
+  .app.with-inspector .center {
+    --stage-r: 372px;
+  }
   .drawer-scrim {
     display: block;
     grid-area: center;
@@ -5157,6 +5138,12 @@ button.fx-head:focus-visible {
 
 @media (max-width: 560px) {
   /* Mode tabs drop to their own full-width row under the brand and actions. */
+  /* A drawer covers the whole stage on a phone; nothing to make room for. */
+  .app.with-library .center,
+  .app.with-inspector .center {
+    --stage-l: 0px;
+    --stage-r: 0px;
+  }
   .app,
   .app.with-library,
   .app.with-inspector,
