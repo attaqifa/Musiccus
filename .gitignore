@@ -1,0 +1,74 @@
+# Dependencies and build output
+node_modules
+dist
+dev-dist
+coverage
+*.tsbuildinfo
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local environment, credentials and certificates
+.env
+.env.*
+!.env.example
+.npmrc
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Deploy CLI state (project and team IDs)
+.vercel/
+.netlify/
+
+# Local music, recordings and models for testing (large, copyrighted)
+music/
+*.wav
+*.flac
+*.mp3
+*.m4a
+*.aac
+*.aif
+*.aiff
+*.ogg
+*.opus
+*.mp4
+*.webm
+*.onnx
+*.lrc
+
+# AI assistants and agent tooling
+.claude/
+.impeccable/
+graphify-out/
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+GEMINI.md
+.mcp.json
+.cursor/
+.cursorrules
+.cursorignore
+.windsurf/
+.windsurfrules
+.codex/
+.gemini/
+.aider*
+.continue/
+.github/copilot-instructions.md
+
+# OS, editors and OneDrive
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+~$*
+*.tmp
+.vscode/
+.idea/
+*.swp

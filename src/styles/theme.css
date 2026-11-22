@@ -1,0 +1,169 @@
+/*
+ * Graphite Prism. Colour has three jobs and never swaps them:
+ *   interaction  signal white: buttons, knobs, active states (never changes)
+ *   status       green = pure, yellow-orange = signal altered, red = problem
+ *   expression   --key, the colour of the song's key, set live from the music
+ */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces carry a breath of the song's colour, so the whole room takes on its mood. */
+  --void: color-mix(in oklab, rgb(var(--key-rgb)) 4%, #08090a);
+  --bg: color-mix(in oklab, rgb(var(--key-rgb)) 4%, #0f1012);
+  --panel: color-mix(in oklab, rgb(var(--key-rgb) / 0.9) 6%, rgba(13, 14, 16, 0.6));
+  --panel-solid: color-mix(in oklab, rgb(var(--key-rgb)) 5%, #15171a);
+  --raised: rgba(236, 234, 230, 0.045);
+  --raised-2: rgba(236, 234, 230, 0.08);
+  --line: rgba(236, 234, 230, 0.07);
+  --line-2: rgba(236, 234, 230, 0.12);
+  --line-3: rgba(236, 234, 230, 0.22);
+
+  --ink: #eceae6;
+  --ink-2: #b9bcc1;
+  --ink-3: #8e9196;
+  --ink-4: #4a4e54;
+
+  /* Interaction. */
+  --signal-rgb: 242 239 232;
+  --signal: rgb(var(--signal-rgb));
+  --signal-dim: rgb(var(--signal-rgb) / 0.08);
+  --signal-line: rgb(var(--signal-rgb) / 0.36);
+  --on-signal: #121314;
+
+  /* Status. */
+  --ok: #9dbf7a;
+  --warn-rgb: 234 176 74;
+  --warn: rgb(var(--warn-rgb));
+  --danger-rgb: 224 97 74;
+  --danger: rgb(var(--danger-rgb));
+  --danger-text: #f08a74;
+
+  /* Expression: rewritten live as the key colour moves (see ui/ambient.ts). */
+  --key-rgb: 249 149 73;
+  --key: rgb(var(--key-rgb));
+  --key-dim: rgb(var(--key-rgb) / 0.14);
+  --key-line: rgb(var(--key-rgb) / 0.42);
+
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Data reads in the UI face with tabular figures; there is no mono face. */
+  --font-mono: var(--font-ui);
+
+  /* Type scale: 12 13 14 16 20 28 40, display sizes above that. */
+  /* Three radii: controls, panels, and full round for pills and the play button. */
+  --r-s: 8px;
+  --r-m: 8px;
+  --r-l: 20px;
+  --gap: 12px;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --glass: blur(28px) saturate(140%);
+  --shadow-panel: 0 30px 80px -30px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  font-feature-settings: 'ss01', 'tnum';
+}
+
+body.idle,
+body.idle * {
+  cursor: none !important;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgb(var(--signal-rgb) / 0.25);
+}
+
+input[type='range'] {
+  width: 100%;
+  accent-color: var(--signal);
+  height: 20px;
+  margin: 0;
+}
+
+kbd {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid var(--line-2);
+  border-bottom-width: 2px;
+  background: var(--raised);
+  color: var(--ink);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(236, 234, 230, 0.14) transparent;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

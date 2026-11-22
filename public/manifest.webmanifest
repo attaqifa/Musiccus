@@ -1,0 +1,17 @@
+{
+  "name": "Musiccus",
+  "short_name": "Musiccus",
+  "description": "Putar lagu Anda dengan visual yang hidup dan lirik yang bergerak kata demi kata. Semua berjalan di perangkat Anda.",
+  "lang": "id",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0F1012",
+  "theme_color": "#0F1012",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
