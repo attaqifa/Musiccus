@@ -20,8 +20,8 @@ export interface Track {
   needsWasm: boolean;
 }
 
-export type WorldId = 'nebula' | 'terrain' | 'stereo' | 'aurora';
-export const WORLD_IDS: readonly WorldId[] = ['nebula', 'terrain', 'stereo', 'aurora'];
+export type WorldId = 'nebula' | 'terrain' | 'aurora';
+export const WORLD_IDS: readonly WorldId[] = ['nebula', 'terrain', 'aurora'];
 /** Render quality the visual engine runs at. */
 export type Quality = 'low' | 'medium' | 'high' | 'ultra';
 /** What the listener picks in Settings: Otomatis follows the device. */
@@ -47,8 +47,6 @@ export interface Settings {
   muted: boolean;
   /** Where visual colours come from: the song's key, its cover art, or graphite. */
   colorSource: ColorSource;
-  /** Switch worlds automatically at section boundaries. */
-  director: boolean;
   /** Look up lyrics on LRCLIB when a song has none of its own. */
   lyricsOnline: boolean;
   /** The listener's headphones and their AutoEQ correction. */
@@ -165,7 +163,6 @@ const DEFAULT_SETTINGS: Settings = {
   volumeDb: -6,
   muted: false,
   colorSource: 'music',
-  director: false,
   lyricsOnline: true,
   headphone: null,
   headphoneOn: true,
@@ -188,8 +185,8 @@ const SETTINGS_KEY = 'musiccus:settings';
 /** Saved settings, with values from older versions mapped to what exists now. */
 function loadSettings(): Settings {
   const saved = loadJSON<Record<string, unknown>>(SETTINGS_KEY, {});
-  const s = { ...DEFAULT_SETTINGS, ...saved } as Settings & { vuRef?: number; bloom?: number };
-  // The Cymatics world was removed; anyone who last used it lands on Nebula.
+  const s = { ...DEFAULT_SETTINGS, ...saved } as Settings & { vuRef?: number; bloom?: number; director?: boolean };
+  // The Cymatics and Stereo worlds were removed; anyone who last used one lands on Nebula.
   if (!WORLD_IDS.includes(s.world)) s.world = 'nebula';
   // Older versions stored a render level. The device's own pick was saved
   // as if chosen, so only the extremes count as a real choice.
@@ -199,6 +196,8 @@ function loadSettings(): Settings {
   else if (q !== 'eco' && q !== 'high') s.quality = 'auto';
   delete s.vuRef;
   delete s.bloom;
+  // Auto visual switching (Sutradara) was removed.
+  delete s.director;
   // The engine rate and ReplayGain preamp no longer have controls; keep the defaults.
   s.rateMode = DEFAULT_SETTINGS.rateMode;
   s.rgPreamp = DEFAULT_SETTINGS.rgPreamp;

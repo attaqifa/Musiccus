@@ -5,7 +5,6 @@ import { closeDrawers, setUi, usePlayer } from './store/player';
 import { CalibrationDialog } from './ui/Calibration';
 import { DropOverlay, HelpDialog, SettingsDrawer, Toasts } from './ui/Dialogs';
 import { ErrorBoundary } from './ui/ErrorBoundary';
-import { useDirector } from './ui/director';
 import { cls } from './ui/hooks';
 import { LibraryPanel } from './ui/LibraryPanel';
 import { useIdleCursor, useShortcuts } from './ui/shortcuts';
@@ -46,7 +45,6 @@ export default function App() {
   }, []);
   useShortcuts();
   useIdleCursor(ui.hidden);
-  useDirector();
 
   return (
     <div

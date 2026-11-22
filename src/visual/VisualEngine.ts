@@ -9,7 +9,6 @@ import type { Quality, WorldId } from '../store/player';
 import type { BloomSettings, World } from './world';
 import { AuroraWorld } from './worlds/aurora';
 import { NebulaWorld } from './worlds/nebula';
-import { StereoWorld } from './worlds/stereo';
 import { TerrainWorld } from './worlds/terrain';
 
 const PIXEL_RATIO: Record<Quality, number> = { low: 0.75, medium: 1, high: 1.5, ultra: 2 };
@@ -85,11 +84,9 @@ export class VisualEngine {
       w =
         id === 'terrain'
           ? new TerrainWorld(this.quality)
-          : id === 'stereo'
-            ? new StereoWorld(this.quality)
-            : id === 'aurora'
-              ? new AuroraWorld()
-              : new NebulaWorld(this.quality);
+          : id === 'aurora'
+            ? new AuroraWorld()
+            : new NebulaWorld(this.quality);
       w.resize(this.width, this.height, this.pixelRatio());
       this.worlds.set(id, w);
     }

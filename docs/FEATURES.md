@@ -23,7 +23,7 @@ Panduan lengkap semua fitur. Ringkasannya ada di [README](../README.md).
 - Jeda, ganti lagu, dan atur volume tetap di tab sumbernya. Senyap lebih dari sebentar dianggap jeda atau pergantian lagu.
 - Tempo, kunci, dan akor dianalisis dari setengah menit terakhir dan diperbarui setiap 8 detik, jadi visual mulai mengikuti ketukan beberapa detik setelah lagu terdengar. Warna visual mengikuti kunci lagu.
 - Lirik: kalau judul tab berisi judul lagu, liriknya dicari otomatis. Kalau tidak, ketik judulnya di panel lirik (`I`). Klik baris yang sedang dinyanyikan untuk menyamakan waktunya. Lirik hilang sendiri saat lagunya selesai.
-- Yang tidak tersedia untuk tab, karena butuh seluruh lagu atau file aslinya: kecepatan (nada tetap bisa diubah, dan preset Slowed + reverb terdengar lebih dalam tanpa melambat), simpan sebagai file, pemisahan stem, rekam video, Song Map, dan Karakter rekaman.
+- Yang tidak tersedia untuk tab, karena butuh seluruh lagu atau file aslinya: kecepatan (nada tetap bisa diubah, dan preset Slowed + reverb terdengar lebih dalam tanpa melambat), simpan sebagai file, pemisahan stem, Song Map, dan Karakter rekaman.
 
 **Headphone saya** (Pengaturan → Headphone)
 - Ketik model headphone atau earphone Anda, misalnya "Sony XM4" atau "AirPods Pro". Musiccus memasang kurva koreksi dari proyek [AutoEQ](https://github.com/jaakkopasanen/AutoEq) supaya warna suaranya mendekati netral di semua lagu. Daftarnya memuat lebih dari 6.000 model hasil ukur oratory1990, crinacle, Rtings, dan lainnya; untuk model yang diukur beberapa lab, hasil lab paling tepercaya yang dipakai.
@@ -40,7 +40,7 @@ Panduan lengkap semua fitur. Ringkasannya ada di [README](../README.md).
 - Pencarian LRCLIB memakai judul, artis, album, dan durasi dari tag. Kalau tag kosong, nama file `Artis - Judul` juga dipakai. Hasil yang durasinya berbeda lebih dari 4 detik ditolak, karena itu biasanya versi lain dari lagu itu (radio edit, extended) dengan waktu lirik berbeda. Jawaban disimpan di browser, jadi satu lagu hanya dicari sekali. Pencarian online bisa dimatikan di Pengaturan → Lirik.
 - Lirik salah atau tidak ketemu? Tombol cari di panel lirik mencari versi lain di LRCLIB, dan pilihan Anda diingat untuk file itu. File `.lrc` yang diseret ke jendela juga langsung dipakai.
 - **Dua tampilan**:
-  - **Lirik kinetik** di atas visual: kata muncul tepat saat dinyanyikan dan meletup, baris yang sedang dinyanyikan berdenyut mengikuti kick dan snare, chorus tampil lebih besar dan bercahaya, dan warnanya diambil dari palet lagu.
+  - **Lirik kinetik** di atas visual (nyalakan atau matikan dengan tombol mikrofon di bilah pemutar, atau `Y`): kata muncul tepat saat dinyanyikan dan meletup, baris yang sedang dinyanyikan berdenyut mengikuti kick dan snare, chorus tampil lebih besar dan bercahaya, dan warnanya diambil dari palet lagu.
   - **Panel karaoke** (tombol `I`): seluruh lirik bergulir mengikuti lagu, kata yang sedang dinyanyikan terisi dari kiri ke kanan, dan klik sebuah baris untuk melompat ke sana. Selama panel terbuka, lirik kinetik disembunyikan.
 - **Waktu per kata**: hampir semua lirik (LRCLIB juga) hanya punya waktu per baris. Musiccus memperkirakan waktu setiap kata:
   1. Kata membagi bagian baris yang dinyanyikan menurut jumlah suku katanya. Panjang bagian itu mengikuti tempo lagu dan tidak pernah melewati baris berikutnya.
@@ -53,14 +53,12 @@ Panduan lengkap semua fitur. Ringkasannya ada di [README](../README.md).
 **Visual**
 - **Nebula**: galaksi partikel. Bass jadi massa, kick memicu gelombang kejut, hi-hat jadi percikan.
 - **Lanskap**: ngarai spektral menuju gerhana yang bernapas mengikuti musik.
-- **Stereo**: lebar stereo lagu jadi terowongan cahaya.
 - **Aurora**: tirai cahaya di atas danau; kick menjatuhkan riak.
 - Warna mengikuti nuansa lagu (kuncinya) dan tetap satu keluarga dari awal sampai akhir; bagian lagu hanya mengubah intensitas. Bisa diganti ke warna cover album atau monokrom.
 - Visual tahu struktur lagunya: ketegangan dibangun beberapa bar sebelum bagian yang lebih keras, lalu meledak tepat di awalnya. Setiap pergantian akor terlihat.
 - Reaksinya adaptif untuk lagu yang di-master keras: kick yang memicu efek naik dari 61% ke 100% pada lagu uji bercrest 7,4 dB.
-- Ganti visual otomatis per bagian lagu (`D`), mode panggung tanpa UI (`H`), layar penuh (`F`).
+- Mode panggung tanpa UI (`H`), layar penuh (`F`).
 - Visual dan lirik ditunda sebesar latensi output supaya jatuh tepat saat suaranya sampai. Untuk headphone Bluetooth ada kalibrasi klik-dan-kilatan di Pengaturan.
-- **Rekam video**: visual dan audio (termasuk racikan suara) direkam real time menjadi MP4 (atau WebM). Lirik belum ikut terekam.
 
 ### Pahami (tombol `U`)
 
@@ -138,8 +136,7 @@ Mode Detail menyala sejak pertama kali dibuka, supaya semua kemampuan Musiccus l
 | A | Dengar asli (tahan untuk sesaat) |
 | S | Mode Stem |
 | O | Panel Pantau (meter level, loudness, spektrum, stereo) |
-| 1 – 4 | Visual Nebula, Lanskap, Stereo, Aurora |
-| D | Ganti visual otomatis |
+| 1 – 3 | Visual Nebula, Lanskap, Aurora |
 | Y | Lirik di atas visual |
 | Q | Antrean, acak, ulang, dan timer tidur |
 | G | Peta koleksi |

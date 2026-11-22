@@ -1107,10 +1107,6 @@ body.idle .stage-exit {
   --title-shade: 0.5;
 }
 
-.center[data-world='stereo'] {
-  --title-shade: 0.3;
-}
-
 /* The song's key, in its own colour: the one line of music above the title. */
 .np-eyebrow {
   min-height: 21px;
@@ -2386,21 +2382,6 @@ button.q-row:hover {
 .world-switch [role='radiogroup'] {
   display: flex;
   gap: 2px;
-}
-
-.world-switch .director {
-  margin-left: 4px;
-  padding-left: 12px;
-  border-left: 1px solid var(--line-2);
-  border-radius: 0 999px 999px 0;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0;
-}
-
-.world-switch .director.on {
-  color: var(--signal);
-  background: var(--signal-dim);
 }
 
 .music-hud {
@@ -3823,18 +3804,6 @@ button.fx-head:focus-visible {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--ink-2);
-}
-
-/* -------------------------------------------------------- Recording -- */
-
-.world-switch .rec.on {
-  color: var(--danger-text);
-  border-color: rgb(var(--danger-rgb) / 0.5);
-  font-family: var(--font-mono);
-}
-
-.world-switch .rec.on svg {
-  fill: currentColor;
 }
 
 /* ------------------------------------------------- Pantau (meters) -- */

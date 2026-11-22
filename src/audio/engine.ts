@@ -668,26 +668,6 @@ export class AudioEngine extends Emitter<EngineEvents> {
     this.stemMixer?.apply(this.stemMix, this.hasStems(this.cur), immediate);
   }
 
-  /**
-   * A stereo stream of what is heard, after the stems, the rack and
-   * ReplayGain but before the volume knob, for recording video.
-   */
-  recordTap(): MediaStreamAudioDestinationNode | null {
-    if (!this.ctx) return null;
-    const dest = this.ctx.createMediaStreamDestination();
-    dest.channelCount = 2;
-    this.declick.connect(dest);
-    return dest;
-  }
-
-  releaseTap(dest: MediaStreamAudioDestinationNode): void {
-    try {
-      this.declick.disconnect(dest);
-    } catch {
-      /* graph was rebuilt */
-    }
-  }
-
   /** Mixer settings for separated stems (karaoke, solo, 3D stage). */
   setStemMix(mix: StemMix): void {
     this.stemMix = mix;

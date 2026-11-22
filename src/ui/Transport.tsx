@@ -1,8 +1,9 @@
-import { LoaderCircle, Pause, Play, SkipBack, SkipForward, Square, Volume2, VolumeX } from 'lucide-react';
+import { LoaderCircle, MicVocal, Pause, Play, SkipBack, SkipForward, Square, Volume2, VolumeX } from 'lucide-react';
 import { useRef } from 'react';
 import { engine } from '../audio/engine';
 import { formatTime } from '../lib/format';
 import { useLive } from '../live/store';
+import { useLyrics } from '../lyrics/lyrics';
 import { next, prev, setLiveMonitor, setVolume, stopListening, toggleMute, togglePlay } from '../store/controller';
 import { usePlayer } from '../store/player';
 import { Cover } from './Cover';
@@ -130,6 +131,7 @@ export function Transport() {
 
       <div className="tp-right">
         <SoundChip />
+        <LyricsButton />
         {!live && <QueueButton />}
         <button
           className="icon-btn"
@@ -155,5 +157,24 @@ export function Transport() {
         />
       </div>
     </footer>
+  );
+}
+
+/** Kinetic lyrics over the visuals, on or off; only shown when the song has timed lyrics. */
+function LyricsButton() {
+  const nowId = usePlayer((s) => s.now?.trackId);
+  const has = useLyrics((s) => !!(nowId && s.timed[nowId]?.length));
+  const show = useLyrics((s) => s.show);
+  if (!has) return null;
+  return (
+    <button
+      className={cls('icon-btn mode-btn', show && 'on')}
+      onClick={() => useLyrics.setState({ show: !show })}
+      aria-pressed={show}
+      aria-label="Lirik di atas visual"
+      title={show ? 'Sembunyikan lirik di atas visual (Y)' : 'Tampilkan lirik di atas visual (Y)'}
+    >
+      <MicVocal size={17} />
+    </button>
   );
 }

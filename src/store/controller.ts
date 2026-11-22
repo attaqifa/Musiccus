@@ -421,7 +421,7 @@ export async function resumeQueue(id: string, saved: SavedQueue, offset: number)
   await playPick({ id, source: 'again', index: getState().queueIndex }, offset);
 }
 
-/** Plays the song that is playing now from `offset` (the video recorder starts from the top). */
+/** Plays the song that is playing now from `offset`. */
 export async function replayCurrent(offset = 0) {
   const s = getState();
   const id = s.now?.trackId;

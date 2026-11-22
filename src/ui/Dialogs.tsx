@@ -128,20 +128,6 @@ export function SettingsDrawer() {
             ]}
           />
         </Field>
-        <Field
-          label="Ganti visual otomatis"
-          hint="Visual berganti di setiap bagian lagu, tepat di ketukannya: intro dan outro Aurora, verse Lanskap, chorus Nebula, bridge Stereo."
-        >
-          <Segmented
-            label="Ganti visual otomatis"
-            value={s.director ? 'on' : 'off'}
-            onChange={(v) => set({ director: v === 'on' })}
-            options={[
-              { value: 'on', label: 'Aktif' },
-              { value: 'off', label: 'Mati' },
-            ]}
-          />
-        </Field>
         <Field label="Kartu grafis" hint="GPU yang dipakai browser ini untuk visual dan pemisahan stem.">
           <GpuReadout />
         </Field>
@@ -203,8 +189,7 @@ const SHORTCUTS: [string, string][] = [
   ['N / P', 'Lagu berikutnya / sebelumnya'],
   ['M', 'Mute'],
   ['U', 'Ganti mode Dengar / Pahami'],
-  ['1 – 4', 'Visual Nebula, Lanskap, Stereo, Aurora'],
-  ['D', 'Ganti visual otomatis'],
+  ['1 – 3', 'Visual Nebula, Lanskap, Aurora'],
   ['B', 'Mode Racik: preset suara, kecepatan, dan nada'],
   ['A', 'Dengar asli: bandingkan racikan dengan suara asli (tahan untuk sesaat)'],
   ['S', 'Mode Stem: pisahkan vokal, drum, bass; karaoke dan panggung 3D'],

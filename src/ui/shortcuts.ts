@@ -60,16 +60,13 @@ export function useShortcuts() {
           toggleMute();
           break;
         case '1':
-          setSettings({ world: 'nebula', director: false });
+          setSettings({ world: 'nebula' });
           break;
         case '2':
-          setSettings({ world: 'terrain', director: false });
+          setSettings({ world: 'terrain' });
           break;
         case '3':
-          setSettings({ world: 'stereo', director: false });
-          break;
-        case '4':
-          setSettings({ world: 'aurora', director: false });
+          setSettings({ world: 'aurora' });
           break;
         case 'u':
         case 'U':
@@ -102,10 +99,6 @@ export function useShortcuts() {
         case 's':
         case 'S':
           setUi({ mode: s.ui.mode === 'stem' ? 'dengar' : 'stem', inspector: true, hidden: false });
-          break;
-        case 'd':
-        case 'D':
-          setSettings({ director: !s.settings.director });
           break;
         case 'o':
         case 'O':

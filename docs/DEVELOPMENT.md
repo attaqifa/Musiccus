@@ -76,7 +76,7 @@ Tab ─► getDisplayMedia ─► MediaStreamSource ──────┘       
 | `src/lyrics` | `lyrics.ts` (sumber lirik, parser LRC, state), `lrclib.ts` (pencarian dan cache LRCLIB), `timing.ts` (perkiraan waktu per kata dari suku kata, stem vokal, dan beat grid) |
 | `src/studio` | `presets.ts` (preset Racik), `graph.ts` (rantai efek, live dan offline), `store.ts`, `control.ts`, `export.ts` |
 | `src/stems` | `worker.ts` (HTDemucs di WebGPU, DSP), `dsp.ts`, `mixer.ts` (penggabung stem bit-exact dan panggung HRTF), `manager.ts` (antrean, cache, export, level vokal), `store.ts` |
-| `src/visual` | Visual engine, empat world, dan `recorder.ts` (rekam video) |
+| `src/visual` | Visual engine dan tiga world |
 | `src/live` | Dengar dari tab: `tab.ts` (getDisplayMedia, tebakan judul dari judul tab), `analyzer.ts` (analisis bergulir, jam dengar yang berhenti saat senyap, beat grid yang dilanjutkan), `store.ts` |
 | `src/library` | Scan folder, drag-drop, metadata dan cover, analisis koleksi |
 | `src/store` | State (Zustand), controller pemutaran (antrean, acak, ulang), `session.ts` (Lanjutkan: lagu, detik, dan antrean terakhir), `sleep.ts` (timer tidur) |
