@@ -6,6 +6,7 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import type { Snapshot } from '../audio/hub';
 import type { Quality, WorldId } from '../store/player';
+import { lyricVeil } from './veil';
 import type { BloomSettings, World } from './world';
 import { AuroraWorld } from './worlds/aurora';
 import { NebulaWorld } from './worlds/nebula';
@@ -36,6 +37,40 @@ const BlendShader = {
   `,
 };
 
+/**
+ * Quiets the light behind the lyrics, after bloom and before tone mapping: a
+ * soft-edged box around the text where bright light is pulled down far more
+ * than dark, so the glow behind the words calms while the night around them
+ * stays as it is. No visible box, no edge.
+ */
+const VeilShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uRes: { value: new THREE.Vector2(1, 1) },
+    uBox: { value: new THREE.Vector4() },
+    uFeather: { value: 80 },
+    uAmount: { value: 0 },
+  },
+  vertexShader: BlendShader.vertexShader,
+  fragmentShader: /* glsl */ `
+    uniform sampler2D tDiffuse;
+    uniform vec2 uRes;
+    uniform vec4 uBox;
+    uniform float uFeather;
+    uniform float uAmount;
+    varying vec2 vUv;
+    void main() {
+      vec4 c = texture2D(tDiffuse, vUv);
+      vec2 q = abs(vUv * uRes - uBox.xy) - uBox.zw;
+      float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
+      float m = (1.0 - smoothstep(-uFeather * 0.3, uFeather, d)) * uAmount;
+      float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722));
+      c.rgb *= mix(1.0, 0.8 / (1.0 + l * 1.6), m);
+      gl_FragColor = c;
+    }
+  `,
+};
+
 const smooth = (x: number) => x * x * (3 - 2 * x);
 
 export class VisualEngine {
@@ -44,6 +79,9 @@ export class VisualEngine {
   private renderPass: RenderPass;
   private bloomPass: UnrealBloomPass;
   private blendPass: ShaderPass;
+  private veilPass: ShaderPass;
+  /** The veil as drawn: eased toward the lyrics' box so line changes glide. */
+  private veil = { x: 0, y: 0, hw: 0, hh: 0, amount: 0 };
   private prevTarget: THREE.WebGLRenderTarget;
   private worlds = new Map<WorldId, World>();
   private world: World;
@@ -67,10 +105,13 @@ export class VisualEngine {
     this.bloomPass = new UnrealBloomPass(new THREE.Vector2(256, 256), 1, 0.6, 0.1);
     this.blendPass = new ShaderPass(BlendShader);
     this.blendPass.enabled = false;
+    this.veilPass = new ShaderPass(VeilShader);
+    this.veilPass.enabled = false;
     this.prevTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
     this.composer.addPass(this.renderPass);
     this.composer.addPass(this.blendPass);
     this.composer.addPass(this.bloomPass);
+    this.composer.addPass(this.veilPass);
     this.composer.addPass(new OutputPass());
     this.applyBloom();
     this.ro = new ResizeObserver(() => this.resize());
@@ -176,7 +217,31 @@ export class VisualEngine {
     this.bloomPass.strength = b.strength * (1 + s.fx.drive * 0.6 + s.fx.space * 0.35);
     this.bloomPass.radius = Math.min(1, b.radius + s.fx.space * 0.35);
     this.bloomPass.threshold = Math.max(0, b.threshold - s.fx.space * 0.06);
+    this.updateVeil(dt);
     this.composer.render(dt);
+  }
+
+  /** Follows the lyrics' box, fading in when they appear and out when they go. */
+  private updateVeil(dt: number) {
+    const box = lyricVeil.box;
+    const v = this.veil;
+    if (box) {
+      // Appearing from nothing: start where the words are instead of sliding in.
+      const k = v.amount < 0.02 ? 1 : 1 - Math.exp(-dt * 8);
+      v.x += (box.x - v.x) * k;
+      v.y += (box.y - v.y) * k;
+      v.hw += (box.hw - v.hw) * k;
+      v.hh += (box.hh - v.hh) * k;
+    }
+    v.amount += ((box?.strength ?? 0) - v.amount) * (1 - Math.exp(-dt * 4));
+    if (!box && v.amount < 0.004) v.amount = 0;
+    this.veilPass.enabled = v.amount > 0;
+    if (!this.veilPass.enabled) return;
+    const u = this.veilPass.uniforms;
+    u.uRes.value.set(this.width, this.height);
+    u.uBox.value.set(v.x, this.height - v.y, v.hw, v.hh);
+    u.uFeather.value = Math.min(120, Math.max(48, v.hh * 0.8));
+    u.uAmount.value = v.amount;
   }
 
   dispose() {
@@ -185,6 +250,7 @@ export class VisualEngine {
     this.composer.dispose();
     this.prevTarget.dispose();
     this.blendPass.dispose();
+    this.veilPass.dispose();
     this.renderer.dispose();
   }
 }

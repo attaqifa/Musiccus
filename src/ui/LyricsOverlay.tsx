@@ -1,9 +1,10 @@
 import { Minus, Plus } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { getAnalysis } from '../analysis/manager';
 import { engine } from '../audio/engine';
 import { lineAt, nudgeOffset, offsetFor, useLyrics, type LyricLine } from '../lyrics/lyrics';
 import { usePlayer } from '../store/player';
+import { lyricVeil, type VeilBox } from '../visual/veil';
 import { cls, useHub, useHubValue } from './hooks';
 
 export const offsetText = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(1).replace('.', ',')} s`;
@@ -23,6 +24,32 @@ export const lyricTime = (offset: number) => (engine.position()?.time ?? 0) - of
 /** The panel shows lyrics itself while it is open in Dengar mode. */
 export function useLyricsPanelOpen(): boolean {
   return usePlayer((s) => s.ui.mode === 'dengar' && s.ui.inspector && !s.ui.hidden && !s.ui.sonicMap && s.order.length > 0);
+}
+
+/**
+ * The box around the three lines' text (not the offset control), with a little
+ * air, for the visuals to quiet. Softer while the song rests between lines.
+ */
+function textBox(el: HTMLElement): VeilBox | null {
+  let l = Infinity;
+  let t = Infinity;
+  let r = -Infinity;
+  let b = -Infinity;
+  const range = document.createRange();
+  for (const p of el.querySelectorAll('.ly-prev, .ly-cur, .ly-next')) {
+    if (!p.textContent?.trim()) continue;
+    // The words themselves, not the paragraph, which spans the whole column.
+    range.selectNodeContents(p);
+    const rc = range.getBoundingClientRect();
+    if (rc.width < 1 || rc.height < 1) continue;
+    l = Math.min(l, rc.left);
+    t = Math.min(t, rc.top);
+    r = Math.max(r, rc.right);
+    b = Math.max(b, rc.bottom);
+  }
+  if (r < l) return null;
+  const resting = el.classList.contains('resting') || !el.querySelector('.ly-cur')?.textContent?.replace('♪', '').trim();
+  return { x: (l + r) / 2, y: (t + b) / 2, hw: (r - l) / 2 + 20, hh: (b - t) / 2 + 10, strength: resting ? 0.4 : 1 };
 }
 
 /** Choruses (and the song's peak) get the big type. */
@@ -71,13 +98,29 @@ export function LyricsOverlay() {
     return i * 4096 + (w + 1) * 2 + rest;
   });
 
+  const measured = useRef(0);
   useHub((s) => {
     const el = root.current;
-    if (!el) return;
+    if (!el) {
+      lyricVeil.box = null;
+      return;
+    }
+    // Tell the visuals where the words are (a few times a second; the engine eases between).
+    const now = performance.now();
+    if (now - measured.current > 120) {
+      measured.current = now;
+      lyricVeil.box = textBox(el);
+    }
     el.style.setProperty('--pulse', s.features.pulse.toFixed(3));
     const voice = s.music.stems ? s.music.stems.vocals : s.features.energy * 0.7;
     el.style.setProperty('--voice', voice.toFixed(3));
   });
+  useEffect(
+    () => () => {
+      lyricVeil.box = null;
+    },
+    [],
+  );
 
   if (!lines?.length || !show || !nowId || panelOpen) return null;
   const idx = step < 0 ? -1 : Math.floor(step / 4096);

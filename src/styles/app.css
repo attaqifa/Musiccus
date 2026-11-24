@@ -4017,6 +4017,9 @@ button.fx-head:focus-visible {
   text-align: center;
   pointer-events: none;
   --voice: 0;
+  /* A dark edge and a soft dark halo: words stay readable over any light the
+     visuals throw behind them (the engine also quiets the light there). */
+  --ly-shade: 0 1px 2px rgb(0 0 0 / 0.45), 0 2px 18px rgb(0 0 0 / 0.5);
 }
 
 .ly-prev,
@@ -4025,8 +4028,9 @@ button.fx-head:focus-visible {
   min-height: 1.3em;
   font-family: var(--font-display);
   font-size: 16px;
-  color: var(--ink-3);
-  opacity: 0.7;
+  color: var(--ink-2);
+  opacity: 0.6;
+  text-shadow: var(--ly-shade);
 }
 
 .ly-cur {
@@ -4037,7 +4041,6 @@ button.fx-head:focus-visible {
   line-height: 1.2;
   color: var(--ink);
   text-wrap: balance;
-  text-shadow: 0 0 calc(6px + var(--voice) * 26px) rgb(var(--key-rgb) / calc(0.25 + var(--voice) * 0.55));
   animation: ly-in 0.35s var(--ease-out);
 }
 
@@ -4049,7 +4052,6 @@ button.fx-head:focus-visible {
 
 .kinetic .ly-cur {
   font-size: clamp(26px, 3.6vw, 46px);
-  text-shadow: none;
   transform: scale(calc(1 + var(--pulse) * 0.022));
   transition: font-size 0.5s var(--ease-out), opacity 0.6s ease;
 }
@@ -4059,13 +4061,15 @@ button.fx-head:focus-visible {
   font-weight: 600;
 }
 
-/* Words wait faintly, light up as they are sung, and pop on arrival. */
+/* Words wait readable but dim, light up as they are sung, and pop on arrival.
+   Only the word being sung glows in the key's colour; the rest carry the dark shade. */
 .kinetic .ly-cur span {
   display: inline-block;
   white-space: pre;
   color: var(--ink);
-  opacity: 0.16;
+  opacity: 0.38;
   transform: translateY(0.14em);
+  text-shadow: var(--ly-shade);
   transition: opacity 0.2s ease, transform 0.32s var(--ease-out), text-shadow 0.3s ease;
 }
 
@@ -4079,12 +4083,15 @@ button.fx-head:focus-visible {
   transform: none;
   color: #fff;
   animation: word-pop 0.42s var(--ease-out);
-  text-shadow: 0 0 calc(10px + var(--pulse) * 22px) rgb(var(--key-rgb) / calc(0.45 + var(--pulse) * 0.4));
+  text-shadow:
+    var(--ly-shade),
+    0 0 calc(10px + var(--pulse) * 22px) rgb(var(--key-rgb) / calc(0.4 + var(--pulse) * 0.4));
 }
 
-.kinetic.big .ly-cur span.sung,
 .kinetic.big .ly-cur span.now {
-  text-shadow: 0 0 calc(14px + var(--voice) * 30px) rgb(var(--key-rgb) / calc(0.3 + var(--voice) * 0.45));
+  text-shadow:
+    var(--ly-shade),
+    0 0 calc(14px + var(--voice) * 30px) rgb(var(--key-rgb) / calc(0.35 + var(--voice) * 0.45));
 }
 
 .kinetic.resting .ly-cur {
