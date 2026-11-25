@@ -71,7 +71,7 @@ Tab ─► getDisplayMedia ─► MediaStreamSource ──────┘       
 
 | Folder | Isi |
 | --- | --- |
-| `src/audio` | `engine.ts` (graf Web Audio, gapless, sinkron waktu), `hub.ts` (fitur dan sinkron A/V), `features.ts` (level dan pulse yang adaptif), `decode.ts` |
+| `src/audio` | `engine.ts` (graf Web Audio, gapless, sinkron waktu), `hub.ts` (fitur dan sinkron A/V), `features.ts` (level dan pulse yang adaptif), `field.ts` (peta mix: posisi pan, nada, pukulan, dan kabut per frekuensi, dibaca dari kanal kiri dan kanan tanpa stem), `field.worker.ts` dan `fieldClient.ts` (peta mix dihitung di worker, hasilnya disamakan dengan waktu yang terdengar), `decode.ts` |
 | `src/analysis` | `worker.ts` (mastering, tempo, beat, struktur), `harmony.ts` (tuning, nada, kunci, akor), `chordView.ts` (akor Ringkas dan lembar akor), `fixes.ts` (koreksi akor dan kunci dari pendengar, ekspor .lab), `manager.ts` (antrean, cache, koreksi diterapkan di atas hasil analisis), `conductor.ts` (state musik per frame), `spectrogram.worker.ts` (spektrogram seluruh lagu, sesuai permintaan), `fft.ts`, `theory.ts`, `color.ts` |
 | `src/lyrics` | `lyrics.ts` (sumber lirik, parser LRC, state), `lrclib.ts` (pencarian dan cache LRCLIB), `timing.ts` (perkiraan waktu per kata dari suku kata, stem vokal, dan beat grid) |
 | `src/studio` | `presets.ts` (preset Racik), `graph.ts` (rantai efek, live dan offline), `store.ts`, `control.ts`, `export.ts` |
@@ -83,13 +83,19 @@ Tab ─► getDisplayMedia ─► MediaStreamSource ──────┘       
 | `src/ui` | Komponen antarmuka; `LyricsOverlay.tsx` (lirik kinetik), `LyricsPanel.tsx` (panel karaoke), `SignalPath.tsx` (jalur suara), `meters/` (Panel Pantau), `FileInfo.tsx` (kualitas file), `understand/` (termasuk `Character.tsx`, `FileEvidence.tsx`, `ChordSheet.tsx`, dan `ChordFix.tsx`), `studio/` (termasuk `Rack.tsx` dan `EqCurve.tsx`), `stems/` |
 | `public/worklets` | `meter-processor.js`: deteksi onset kick, snare, dan hat; `musiccus-capture` mengirim suara tab per blok untuk analisis live |
 | `src/pwa/sw.js` | Templat service worker; `vite.config.ts` menulisnya ke `dist/sw.js` dengan nomor versi build |
-| `src/dev` | `analysisLab.ts` dan `reactivityLab.ts`: lagu sintetis dengan jawaban yang diketahui, untuk mengukur akurasi analisis dan reaksi visual. `chordBench.ts`: mengukur kunci dan akor pada rekaman sungguhan, terhadap file .lab (format MIREX, seperti anotasi Isophonics dan Billboard) atau terhadap koreksi yang Anda simpan. `beatBench.ts`: mengukur tempo dan ketukan pada rekaman sungguhan, terhadap anotasi beat atau tempo acuan. `harmonyLab.ts`: menyetel detektor akor dan kunci pada rekaman beranotasi (setiap lagu dianalisis sekali, lalu setelannya dicoba ratusan kali dalam hitungan detik), dengan `bench-server.cjs` sebagai server lokal untuk audio dan anotasinya. Tidak ikut di-bundle |
+| `src/dev` | `analysisLab.ts` dan `reactivityLab.ts`: lagu sintetis dengan jawaban yang diketahui, untuk mengukur akurasi analisis dan reaksi visual. `fieldLab.ts`: mix sintetis dengan posisi dan jenis setiap suara yang diketahui, untuk mengukur peta mix; `fieldView.ts`: panel 2D peta mix yang sedang diputar. `chordBench.ts`: mengukur kunci dan akor pada rekaman sungguhan, terhadap file .lab (format MIREX, seperti anotasi Isophonics dan Billboard) atau terhadap koreksi yang Anda simpan. `beatBench.ts`: mengukur tempo dan ketukan pada rekaman sungguhan, terhadap anotasi beat atau tempo acuan. `harmonyLab.ts`: menyetel detektor akor dan kunci pada rekaman beranotasi (setiap lagu dianalisis sekali, lalu setelannya dicoba ratusan kali dalam hitungan detik), dengan `bench-server.cjs` sebagai server lokal untuk audio dan anotasinya. Tidak ikut di-bundle |
 
 Uji reaksi visual dan akurasi analisis dari konsol dev:
 
 ```js
 await (await import('/src/dev/reactivityLab.ts')).offlineReport();
 await (await import('/src/dev/analysisLab.ts')).runSuite();
+
+// Peta mix: ukur pada mix sintetis, lalu lihat langsung saat diputar.
+const field = await import('/src/dev/fieldLab.ts');
+field.report();
+await field.addTestTrack();   // "Lab panggung" masuk ke koleksi
+(await import('/src/dev/fieldView.ts')).showField();
 
 // Rekaman sungguhan: pilih folder berisi lagu dan .lab bernama sama (lagu.flac + lagu.lab).
 const bench = await import('/src/dev/chordBench.ts');
@@ -99,6 +105,23 @@ await bench.benchFixes();
 ```
 
 Skornya mengikuti MIREX: akar akor dan mayor/minor, ditimbang durasi. Kunci dinilai 1 kalau tepat, 0,5 kalau meleset satu kelima ke atas, 0,3 kalau relatif, dan 0,2 kalau paralel.
+
+## Akurasi peta mix
+
+Peta mix membaca setiap suara dari mix stereo biasa, tanpa stem: di mana posisinya (pan), dan apakah ia nada yang ditahan, pukulan, atau kabut (gema dan suara stereo yang lebar). `fieldLab.ts` membuat mix sintetis 8 detik berisi enam suara dengan posisi dan jenis yang diketahui, lalu mengukur setiap suara sendirian dan di dalam mix. Di dalam mix, energi setiap band dan lapisan dikreditkan ke suara menurut sumbangannya saat diputar sendiri, dan pan hanya dibaca dari band yang dikuasai satu suara (80% energinya).
+
+| Suara | Posisi asli | Jenis | Pan terbaca di mix (tepat ±0,1) | Di mix: nada / pukulan / kabut |
+|---|---|---|---|---|
+| Kick | tengah | pukulan | 0,00 (100%) | 23 / 77 / 0 |
+| Bass | tengah | nada | 0,00 (99%) | 92 / 8 / 0 |
+| Hi-hat | 60% kanan | pukulan | 0,56 (67%) | 5 / 95 / 0 |
+| Keys | 70% kiri | nada | −0,57 (64%) | 86 / 14 / 0 |
+| Lead | tengah | nada | 0,00 (95%) | 99 / 1 / 0 |
+| Pad lebar | tidak berposisi | kabut | | 7 / 12 / 81 |
+
+Sendirian, keenamnya terbaca tepat di posisinya dan jenisnya benar. Di dalam mix jenisnya tetap benar semua. Posisi keys dan hi-hat bergeser sedikit ke tengah karena di frekuensi yang sama ada suara lain: bin FFT yang berisi dua suara dengan posisi berbeda terbaca di antara keduanya. FFT 8192 titik (sekitar 170 ms di 48 kHz) dipilih karena itu: dengan 4096 titik, keys hanya 32% tepat dan hi-hat 42%. Kick tidak 100% pukulan karena badannya berupa nada rendah yang menurun. Kick 808, yang hampir seluruhnya nada rendah, kemungkinan besar akan terbaca sebagai nada (belum diuji).
+
+Analisisnya sekitar 1,2 sampai 1,8 ms per frame dan berjalan di worker sendiri, jadi tidak mengambil waktu dari visual.
 
 ## Akurasi akor dan kunci
 

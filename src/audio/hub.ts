@@ -2,6 +2,8 @@ import { emptyMusic } from '../analysis/theory';
 import type { Music } from '../analysis/types';
 import { engine, type MeterMsg, type OnsetMsg } from './engine';
 import { FluxTracker, LevelTracker } from './features';
+import { copyField, decayField, emptyField, type MixField } from './field';
+import { FieldClient } from './fieldClient';
 
 /** Log-spaced spectrum points captured per frame (20 Hz up to Nyquist, max 48 kHz). */
 export const SPEC_N = 1024;
@@ -49,6 +51,11 @@ export interface Snapshot {
   meter: MeterMsg | null;
   /** Musical state from the offline analysis (beat, chord, section, palette). */
   music: Music;
+  /**
+   * Where each sound sits in the stereo mix (pan by frequency, tone, hit and
+   * haze), read from the two channels as heard. Needs no stems; see field.ts.
+   */
+  field: MixField;
   /** Studio effects visuals can respond to, 0..1. */
   fx: { space: number; drive: number; width: number };
 }
@@ -81,7 +88,9 @@ class AnalysisHub {
   private rate = 0;
   private fftSize = 0;
   private fft: Float32Array<ArrayBuffer> = new Float32Array(0);
-  private td: Float32Array<ArrayBuffer> = new Float32Array(2048);
+  private tdL: Float32Array<ArrayBuffer> = new Float32Array(2048);
+  private tdR: Float32Array<ArrayBuffer> = new Float32Array(2048);
+  private field = new FieldClient();
   private loBin = new Int32Array(SPEC_N);
   private hiBin = new Int32Array(SPEC_N);
   private ctrBin = new Float32Array(SPEC_N);
@@ -117,6 +126,7 @@ class AnalysisHub {
       spec: new Float32Array(SPEC_N).fill(SPEC_FLOOR), bands: new Float32Array(BANDS_N),
       scopeL: new Float32Array(SCOPE_N), scopeR: new Float32Array(SCOPE_N), features, meter: null,
       music: emptyMusic(),
+      field: emptyField(),
       fx: { space: 0, drive: 0, width: 0 },
     };
     for (let i = 0; i < 240; i++) {
@@ -161,6 +171,7 @@ class AnalysisHub {
     this.head = -1;
     this.meters = [];
     this.onsets = [];
+    this.field.clear();
   }
 
   private configure(rate: number, fftSize: number) {
@@ -227,10 +238,20 @@ class AnalysisHub {
     a.getFloatFrequencyData(this.fft);
     this.mapSpectrum(slot.spec);
 
-    taps.left.getFloatTimeDomainData(this.td);
-    slot.scopeL.set(this.td.subarray(this.td.length - SCOPE_N));
-    taps.right.getFloatTimeDomainData(this.td);
-    slot.scopeR.set(this.td.subarray(this.td.length - SCOPE_N));
+    const n = taps.left.fftSize;
+    if (this.tdL.length !== n) {
+      this.tdL = new Float32Array(n);
+      this.tdR = new Float32Array(n);
+    }
+    taps.left.getFloatTimeDomainData(this.tdL);
+    slot.scopeL.set(this.tdL.subarray(n - SCOPE_N));
+    taps.right.getFloatTimeDomainData(this.tdR);
+    slot.scopeR.set(this.tdR.subarray(n - SCOPE_N));
+    // The field's Hann window responds most to sound at its middle; stamping
+    // the frame 0.3 of a window back makes a hit peak about 35 ms after it
+    // is heard, with its first glow slightly before.
+    this.field.configure(ctx.sampleRate, n);
+    this.field.push(this.tdL, this.tdR, nowCtx, nowCtx - (0.3 * n) / ctx.sampleRate);
   }
 
   private pick(t: number): Captured | null {
@@ -287,7 +308,11 @@ class AnalysisHub {
         else this.env.hat = Math.max(this.env.hat, o.s);
       }
       s.meter = this.pickMeter(t);
+      const field = this.field.pick(t);
+      if (field) copyField(s.field, field);
+      else decayField(s.field, dt);
     } else {
+      decayField(s.field, dt);
       s.scopeL.fill(0);
       s.scopeR.fill(0);
       if (!ctx || engine.position() === null) s.spec.fill(SPEC_FLOOR);

@@ -4,6 +4,7 @@ import { DEFAULT_MIX, mixNeutral, StemMixer, type StemMix } from '../stems/mixer
 import { STORED } from '../stems/types';
 import { StudioGraph } from '../studio/graph';
 import { playbackRate, studioProcessing, type StudioState } from '../studio/types';
+import { fieldFftSize } from './field';
 
 export interface StudioOptions {
   bpm?: number;
@@ -225,7 +226,8 @@ export class AudioEngine extends Emitter<EngineEvents> {
     analyser.smoothingTimeConstant = 0;
     const left = ctx.createAnalyser();
     const right = ctx.createAnalyser();
-    left.fftSize = right.fftSize = 2048;
+    // Long enough for the stereo field analysis (field.ts), which reads them.
+    left.fftSize = right.fftSize = fieldFftSize(ctx.sampleRate);
     const split = ctx.createChannelSplitter(2);
     bus.connect(analyser);
     bus.connect(split);
