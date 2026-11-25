@@ -108,14 +108,15 @@ export function NowPlayingOverlay() {
   const { analysis } = useAnalysis(track?.live ? undefined : now?.trackId);
   if (!now || !track) return null;
   const m = track.meta;
-  const { title, artist } = songLabel(track);
+  const { title, artist, version } = songLabel(track);
   const sub = [artist, m?.album].filter(Boolean).join(', ') + (m?.year ? ` (${m.year})` : '');
   return (
     <div className="np-overlay" key={now.trackId}>
       <p className="np-eyebrow">{track.live ? 'Live dari tab' : analysis ? `${keyName(analysis.key)}, ${Math.round(analysis.bpm)} BPM` : ''}</p>
-      <h1 className="np-title" title={title}>
+      <h1 className="np-title" title={version ? `${title} (${version})` : title}>
         {title}
       </h1>
+      {version && <p className="np-version">{version}</p>}
       <p className="np-sub">{track.live ? artist || 'Suara dari tab browser' : sub}</p>
     </div>
   );

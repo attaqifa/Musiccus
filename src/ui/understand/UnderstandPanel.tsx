@@ -75,10 +75,11 @@ export function UnderstandPanel() {
   } else {
     body = (
       <>
-        <Section id="u-music" title="Musik">
+        {/* Each time the app opens, Pahami starts on the music itself: Musik open, the chord sheet closed. */}
+        <Section id="u-music" title="Musik" remember={false}>
           <MusicSummary analysis={analysis} trackId={nowId} />
         </Section>
-        <Section id="u-sheet" title="Lembar akor" note="Akor lagu per birama. Klik birama untuk memutar dari sana." closed>
+        <Section id="u-sheet" title="Lembar akor" note="Akor lagu per birama. Klik birama untuk memutar dari sana." closed remember={false}>
           <ChordSheet analysis={analysis} trackId={nowId} />
         </Section>
         <Section

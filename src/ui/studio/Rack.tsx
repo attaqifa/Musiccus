@@ -139,13 +139,14 @@ function Card({ title, on, active, onToggle, summary, off, children }: {
     <>
       <span className={cls('fx-led', on && 'on', active && 'live')} aria-hidden="true" />
       <h4>{title}</h4>
-      <span className="fx-sum">{on ? summary : off}</span>
+      {on && <span className="fx-sum">{summary}</span>}
     </>
   );
+  // Off, a module is just its name in a two-column grid; what it does is in the tooltip.
   return (
-    <section className={cls('fx-card', on && 'on')}>
+    <section className={cls('fx-card', on && 'on', !onToggle && 'fixed')}>
       {onToggle ? (
-        <button className="fx-head" aria-pressed={on} onClick={onToggle} title={on ? `Matikan ${title}` : `Nyalakan ${title}`}>
+        <button className="fx-head" aria-pressed={on} onClick={onToggle} title={on ? `Matikan ${title}` : `${off}. Klik untuk menyalakan.`}>
           {head}
         </button>
       ) : (

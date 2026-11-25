@@ -10,11 +10,17 @@ const NOISE = /\s*[([](?:[^)\]]*\b(?:official|music video|lyric video|lyrics?|vi
 const SEP = /\s+[-–—]\s+/;
 
 /**
+ * Which release of the song this is, e.g. "(2004 Remaster)", "[Live]",
+ * "(Radio Edit)". Kept, but read as a quiet subtitle rather than part of the title.
+ */
+const VERSION = /\s*[([]([^)\]]*\b(?:remaster(?:ed)?|remix|mix|edit|version|mono|stereo|deluxe|acoustic|live|demo|instrumental)\b[^)\]]*)[)\]]\s*$/i;
+
+/**
  * Title and artist as the listener should read them, cleaned of download
  * noise: no file extension, no "[Official Music Video]", and "Artist - Title"
  * split in two when the tags do not say who the artist is.
  */
-export function songLabel(t: Track): { title: string; artist: string } {
+export function songLabel(t: Track): { title: string; artist: string; version: string } {
   const m = t.meta;
   let title = (m?.title || t.name.replace(/\.[^.]+$/, '')).replace(NOISE, '').trim();
   let artist = m?.artist?.trim() || '';
@@ -29,5 +35,11 @@ export function songLabel(t: Track): { title: string; artist: string } {
       title = rest;
     }
   }
-  return { title: title || t.name, artist };
+  let version = '';
+  const v = title.match(VERSION);
+  if (v && v.index && v.index > 0) {
+    version = v[1].trim();
+    title = title.slice(0, v.index).trim();
+  }
+  return { title: title || t.name, artist, version };
 }

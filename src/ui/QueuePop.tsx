@@ -9,7 +9,11 @@ import { cls } from './hooks';
 /** How many coming songs the popover lists; the rest is a count. */
 const SHOW = 30;
 
-const titleOf = (t: Track | undefined) => (t ? songLabel(t).title : 'Lagu tidak ditemukan');
+const titleOf = (t: Track | undefined) => {
+  if (!t) return 'Lagu tidak ditemukan';
+  const l = songLabel(t);
+  return l.version ? `${l.title} (${l.version})` : l.title;
+};
 
 const REPEAT_LABEL: Record<RepeatMode, string> = { off: 'Ulang: mati', all: 'Ulang: semua', one: 'Ulang: satu lagu' };
 

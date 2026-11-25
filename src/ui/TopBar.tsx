@@ -1,4 +1,4 @@
-import { Activity, CircleHelp, Eye, PanelLeft, PanelRight, Settings2 } from 'lucide-react';
+import { Activity, CircleHelp, Eye, MicVocal, PanelLeft, PanelRight, Settings2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAnalysis } from '../analysis/manager';
 import { formatRate } from '../lib/format';
@@ -128,7 +128,7 @@ export function TopBar() {
             onClick={() => setUi({ library: !ui.library })}
             aria-pressed={ui.library}
             aria-label="Tampilkan library (L)"
-            title="Library (L)"
+            data-tip="Koleksi lagu · L"
           >
             <PanelLeft size={17} />
           </button>
@@ -137,10 +137,10 @@ export function TopBar() {
           className={cls('icon-btn', ui.inspector && 'on')}
           onClick={() => setUi({ inspector: !ui.inspector })}
           aria-pressed={ui.inspector}
-          aria-label="Tampilkan panel kanan (I)"
-          title={ui.mode === 'dengar' ? 'Panel lirik (I)' : 'Panel kanan (I)'}
+          aria-label={ui.mode === 'dengar' ? 'Tampilkan panel lirik (I)' : 'Tampilkan panel kanan (I)'}
+          data-tip={ui.mode === 'dengar' ? 'Lirik · I' : 'Panel kanan · I'}
         >
-          <PanelRight size={17} />
+          {ui.mode === 'dengar' ? <MicVocal size={17} /> : <PanelRight size={17} />}
         </button>
         {hasNow && (
           <button
@@ -148,18 +148,20 @@ export function TopBar() {
             onClick={() => setSettings({ meters: !meters })}
             aria-pressed={meters}
             aria-label="Panel Pantau (O)"
-            title="Pantau: meter level, loudness, spektrum, dan stereo (O)"
+            data-tip="Meter dan spektrum · O"
           >
             <Activity size={17} />
           </button>
         )}
-        <button className="icon-btn" onClick={() => setUi({ hidden: true })} aria-label="Sembunyikan UI (H)" title="Mode panggung: sembunyikan UI (H)">
+        <button className="icon-btn" onClick={() => setUi({ hidden: true })} aria-label="Sembunyikan UI (H)" data-tip="Mode panggung · H">
           <Eye size={17} />
         </button>
-        <button className={cls('icon-btn', ui.settings && 'on')} onClick={() => setUi({ settings: !ui.settings })} aria-label="Pengaturan" title="Pengaturan (,)">
+        {/* View toggles on the left of the rule, the app itself on the right. */}
+        <span className="tb-rule" aria-hidden="true" />
+        <button className={cls('icon-btn', ui.settings && 'on')} onClick={() => setUi({ settings: !ui.settings })} aria-label="Pengaturan" data-tip="Pengaturan · ,">
           <Settings2 size={17} />
         </button>
-        <button className="icon-btn tb-help" onClick={() => setUi({ help: true })} aria-label="Pintasan keyboard (?)" title="Pintasan keyboard (?)">
+        <button className="icon-btn tb-help" onClick={() => setUi({ help: true })} aria-label="Pintasan keyboard (?)" data-tip="Bantuan dan pintasan · ?">
           <CircleHelp size={17} />
         </button>
       </div>

@@ -280,6 +280,17 @@ body.idle .stage-exit {
   box-shadow: 0 0 0 1px var(--line), 0 6px 18px -8px rgba(0, 0, 0, 0.8);
 }
 
+.cover-mono {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1;
+  color: rgba(236, 234, 230, 0.86);
+}
+
 .cover img {
   width: 100%;
   height: 100%;
@@ -321,6 +332,11 @@ body.idle .stage-exit {
   gap: 24px;
   padding: 0 4px 0 10px;
   min-width: 0;
+}
+
+/* Above the side panels, so its tooltips and pop-ups are never covered by them. */
+.app > .topbar {
+  z-index: 6;
 }
 
 .brand {
@@ -660,6 +676,50 @@ body.idle .stage-exit {
   align-items: center;
   gap: 2px;
   flex: none;
+}
+
+.tb-rule {
+  width: 1px;
+  height: 18px;
+  margin: 0 6px;
+  background: var(--line-2);
+}
+
+/* Quick labels under the top bar icons: they appear at once, unlike a native title. */
+.tb-actions .icon-btn[data-tip] {
+  position: relative;
+}
+
+.tb-actions .icon-btn[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  padding: 5px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--line-2);
+  background: var(--panel-solid);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.tb-actions .icon-btn[data-tip]:hover::after,
+.tb-actions .icon-btn[data-tip]:focus-visible::after {
+  opacity: 1;
+  transform: none;
+}
+
+@media (hover: none) {
+  .tb-actions .icon-btn[data-tip]::after {
+    display: none;
+  }
 }
 
 /* ------------------------------------------------------------ Library -- */
@@ -1060,9 +1120,6 @@ body.idle .stage-exit {
 }
 
 /* Only the playing world names itself; the others are icons with a tooltip. */
-.world-switch [role='radiogroup'] button:not(.on) .ws-label {
-  display: none;
-}
 
 .world-switch button:hover {
   color: var(--ink);
@@ -1132,6 +1189,15 @@ body.idle .stage-exit {
   overflow: hidden;
   padding-bottom: 0.06em;
   animation: rise 0.9s 0.08s var(--ease-out) both;
+}
+
+.np-version {
+  margin: -4px 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink-3);
+  animation: rise 0.9s 0.1s var(--ease-out) both;
 }
 
 .np-sub {
@@ -3492,8 +3558,34 @@ button.q-row:hover {
 /* minmax(0, 1fr): the cards fit the panel; long summaries ellipsize instead of widening it. */
 .fx-rack {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
+}
+
+/* Modules in use come first and full width; the ones that are off sit below
+   as a compact two-column list of names; Output and the hint close the rack. */
+.fx-rack > .fx-card.on {
+  grid-column: 1 / -1;
+  order: 0;
+}
+
+.fx-rack > .fx-card:not(.on) {
+  order: 1;
+}
+
+.fx-rack > .fx-card.fixed {
+  grid-column: 1 / -1;
+  order: 2;
+}
+
+.fx-rack > .fx-hint {
+  grid-column: 1 / -1;
+  order: 3;
+}
+
+.fx-card:not(.on) .fx-head {
+  min-height: 34px;
+  padding: 6px 10px;
 }
 
 .fx-card {
@@ -4975,12 +5067,15 @@ button.fx-head:focus-visible {
 .prism-line i {
   flex: 1;
   border-radius: 1px;
-  opacity: 0.32;
+  /* Unlit keys are a quiet grey track, so only the song's own key shows colour. */
+  opacity: 0.14;
+  filter: grayscale(1);
   transition: opacity 1.2s ease, box-shadow 1.2s ease;
 }
 
 .prism-line i.on {
   opacity: 1;
+  filter: none;
   box-shadow: 0 0 10px 1px rgb(var(--key-rgb) / 0.7);
 }
 
