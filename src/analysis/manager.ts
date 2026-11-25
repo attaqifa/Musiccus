@@ -19,7 +19,6 @@ const results = new Map<string, Analysis>();
 const fixes = new Map<string, fx.Fix>();
 const fixIds = new Map<string, string>();
 const fixLoads = new Map<string, Promise<void>>();
-const cacheKeys = new Map<string, string>();
 const queued: Job[] = [];
 const inFlight = new Set<string>();
 let running: { id: number; job: Job } | null = null;
@@ -56,7 +55,6 @@ function ensureWorker(): Worker {
     if (msg.type === 'done') {
       const id = job.track.id;
       raw.set(id, msg.result);
-      cacheKeys.set(id, job.key);
       void set(job.key, msg.result).catch(() => undefined);
       void job.fixed.then(() => {
         publish(id);
@@ -125,7 +123,6 @@ export async function requestAnalysis(track: Track, buffer: AudioBuffer, resampl
   try {
     key = await cacheKey(track, buffer.sampleRate);
     const cached = (await get(key)) as Analysis | undefined;
-    cacheKeys.set(track.id, key);
     if (cached && cached.version === ANALYSIS_VERSION) {
       raw.set(track.id, cached);
       await fixed;
@@ -159,7 +156,6 @@ export async function loadCachedAnalysis(track: Track, rate: number): Promise<An
     const cached = (await get(key)) as Analysis | undefined;
     if (cached && cached.version === ANALYSIS_VERSION) {
       raw.set(track.id, cached);
-      cacheKeys.set(track.id, key);
       await loadFix(track);
       publish(track.id);
       return results.get(track.id);
@@ -192,39 +188,13 @@ export function analyzeAndWait(track: Track, buffer: AudioBuffer, resampled = fa
 
 /**
  * Tempo octave correction. Half- and double-time readings are genuinely
- * ambiguous, so the listener gets the final word; the fix is cached.
+ * ambiguous, so the listener gets the final word. It is kept with the key and
+ * chord corrections, so a new analysis version does not lose it.
  */
 export function adjustTempo(trackId: string, factor: 0.5 | 2) {
-  const a = raw.get(trackId);
-  if (!a || a.beats.length < 4) return;
-  const old = Array.from(a.beats);
-  const d0 = a.downbeats[0] ?? 0;
-  let beats: number[];
-  let first: number;
-  if (factor === 2) {
-    beats = [];
-    for (let i = 0; i < old.length; i++) {
-      beats.push(old[i]);
-      if (i + 1 < old.length) beats.push((old[i] + old[i + 1]) / 2);
-    }
-    first = d0 * 2;
-  } else {
-    beats = old.filter((_, i) => i % 2 === d0 % 2);
-    first = Math.floor(d0 / 2);
-  }
-  const downbeats: number[] = [];
-  for (let i = first; i < beats.length; i += 4) downbeats.push(i);
-  const next: Analysis = {
-    ...a,
-    bpm: Math.round(a.bpm * factor * 10) / 10,
-    beats: new Float32Array(beats),
-    downbeats: new Int32Array(downbeats),
-  };
-  raw.set(trackId, next);
-  publish(trackId);
-  const key = cacheKeys.get(trackId);
-  if (key) void set(key, next).catch(() => undefined);
-  setAnalysisStatus(trackId, { state: 'done', stage: 'Tempo dikoreksi', progress: 1 });
+  const shown = results.get(trackId);
+  if (!shown || shown.beats.length < 4) return;
+  commit(trackId, (f, a) => fx.setTempo(f, shown.bpm * factor, a.bpm), 'Tempo dikoreksi');
 }
 
 /* ------------------------------------------------------------------------ */
@@ -260,7 +230,7 @@ export const getRawAnalysis = (trackId: string | undefined) => (trackId ? raw.ge
 
 export const getFix = (trackId: string | undefined) => (trackId ? fixes.get(trackId) : undefined);
 
-function commit(trackId: string, change: (f: fx.Fix, a: Analysis) => fx.Fix) {
+function commit(trackId: string, change: (f: fx.Fix, a: Analysis) => fx.Fix, stage = 'Dikoreksi') {
   const a = raw.get(trackId);
   if (!a) return;
   const f = change(fixes.get(trackId) ?? fx.emptyFix(getState().tracks[trackId], a.duration), a);
@@ -268,7 +238,7 @@ function commit(trackId: string, change: (f: fx.Fix, a: Analysis) => fx.Fix) {
   if (keep) fixes.set(trackId, f);
   else fixes.delete(trackId);
   publish(trackId);
-  setAnalysisStatus(trackId, { state: 'done', stage: 'Dikoreksi', progress: 1 });
+  setAnalysisStatus(trackId, { state: 'done', stage, progress: 1 });
   const id = fixIds.get(trackId);
   if (id) void (keep ? set(id, f) : del(id)).catch(() => undefined);
 }

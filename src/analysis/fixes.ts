@@ -25,8 +25,18 @@ export interface KeyFix {
   own: boolean;
 }
 
+/**
+ * The tempo the listener settled on with ½× or 2×. Stored as the tempo, not
+ * as the factor, so a later analysis version that already reads the right
+ * octave is not halved again.
+ */
+export interface TempoFix {
+  bpm: number;
+}
+
 export interface Fix {
   key?: KeyFix;
+  tempo?: TempoFix;
   /** Applied in order, so a later span wins where two overlap. */
   chords: ChordFix[];
   /** The listener went through the whole sheet, so every span is a reference, not only the corrected ones. */
@@ -70,7 +80,52 @@ export function emptyFix(t: Track | undefined, duration: number): Fix {
   };
 }
 
-export const hasContent = (f: Fix) => !!f.key || f.chords.length > 0 || f.checked;
+export const hasContent = (f: Fix) => !!f.key || !!f.tempo || f.chords.length > 0 || f.checked;
+
+/** Octaves (powers of two) from the analysis tempo to the listener's, within ±2. */
+function tempoOctaves(analysed: number, wanted: number): number {
+  if (!(analysed > 0) || !(wanted > 0)) return 0;
+  return Math.max(-2, Math.min(2, Math.round(Math.log2(wanted / analysed))));
+}
+
+/**
+ * The beat grid at twice or half the tempo. Doubling puts a beat halfway
+ * between each pair; halving keeps every other beat, on the downbeats' side,
+ * so bars still start where the analysis heard them.
+ */
+export function scaleTempo(a: Analysis, factor: 0.5 | 2): Analysis {
+  if (a.beats.length < 4) return a;
+  const old = a.beats;
+  const d0 = a.downbeats[0] ?? 0;
+  const beats: number[] = [];
+  let first: number;
+  if (factor === 2) {
+    for (let i = 0; i < old.length; i++) {
+      beats.push(old[i]);
+      if (i + 1 < old.length) beats.push((old[i] + old[i + 1]) / 2);
+    }
+    first = d0 * 2;
+  } else {
+    for (let i = d0 % 2; i < old.length; i += 2) beats.push(old[i]);
+    first = Math.floor(d0 / 2);
+  }
+  const downbeats: number[] = [];
+  for (let i = first; i < beats.length; i += 4) downbeats.push(i);
+  return {
+    ...a,
+    bpm: Math.round(a.bpm * factor * 10) / 10,
+    // The reading this came from stays the other plausible octave.
+    tempoAlt: factor === 2 ? 0.5 : 2,
+    beats: new Float32Array(beats),
+    downbeats: new Int32Array(downbeats),
+  };
+}
+
+/** Sets the tempo the listener hears, or drops the correction when it is what the analysis read. */
+export function setTempo(f: Fix, bpm: number, analysed: number): Fix {
+  const tempo = tempoOctaves(analysed, bpm) === 0 ? undefined : { bpm };
+  return { ...f, tempo, updated: Date.now() };
+}
 
 /** Removes [t, end) from a list of spans, keeping the parts around it. */
 function cut<T extends Span>(list: T[], t: number, end: number): T[] {
@@ -91,7 +146,10 @@ const sameChord = (a: ChordSeg, b: ChordSeg) => a.root === b.root && a.quality =
 
 /** The analysis as the listener corrected it. Returns the same object when nothing was corrected. */
 export function applyFix(a: Analysis, f: Fix | undefined): Analysis {
-  if (!f || (!f.key && f.chords.length === 0)) return a;
+  if (!f) return a;
+  const octaves = f.tempo ? tempoOctaves(a.bpm, f.tempo.bpm) : 0;
+  for (let i = 0; i < Math.abs(octaves); i++) a = scaleTempo(a, octaves > 0 ? 2 : 0.5);
+  if (!f.key && f.chords.length === 0) return a;
   let chords = a.chords;
   for (const c of f.chords) {
     chords = cut(chords, c.t, c.end);

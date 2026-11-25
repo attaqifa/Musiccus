@@ -1,5 +1,5 @@
 /** Bump when the analysis algorithm changes so cached results are recomputed. */
-export const ANALYSIS_VERSION = 14;
+export const ANALYSIS_VERSION = 15;
 
 export type ChordQuality = 'maj' | 'min';
 
@@ -72,6 +72,12 @@ export interface Analysis {
   duration: number;
   bpm: number;
   tempoConfidence: number;
+  /**
+   * The other tempo octave (×2 or ×½), when it fits the onsets about as well
+   * as `bpm` does; null when the reading is clear. Half- and double-time are
+   * often both defensible, so the listener gets the final word.
+   */
+  tempoAlt: 0.5 | 2 | null;
   beats: Float32Array;
   /** Indices into `beats` that start a bar (4/4 assumed). */
   downbeats: Int32Array;

@@ -168,6 +168,7 @@ function analyze(job: AnalysisJob): Analysis {
     duration,
     bpm: Math.round(bpm * 10) / 10,
     tempoConfidence: tempo.confidence,
+    tempoAlt: tempo.alt,
     beats,
     downbeats: new Int32Array(downbeats),
     key,
@@ -817,22 +818,37 @@ function estimateTempo(onsetRaw: Float32Array, frameRate: number) {
   const avg = mean(scores) || 1;
   const confidence = Math.max(0, Math.min(1, (b / avg - 1) / 3));
 
-  // Octave check: if the chosen period splits into two halves of nearly
-  // equal strength, it is really two beats (a backbeat snare can make the
-  // half-tempo reading win the autocorrelation). Walk faster while that holds.
+  // Octave check. The comb settles the period only up to a factor of two. A
+  // backbeat snare can make the half-tempo reading win, so a period whose two
+  // halves are about equally strong may really be two beats. But steady
+  // eighth notes (hi-hats, strummed guitar, an eighth-note bass) split the
+  // right period into equal halves too: on real songs, always walking faster
+  // read 80 BPM as 160 and 89 as 178. Equal halves therefore only say that
+  // both readings fit the onsets, and between two readings that fit, the one
+  // nearer the tempo listeners most often tap wins.
   const smooth = new Float64Array(n);
   for (let i = 1; i < n - 1; i++) smooth[i] = 0.25 * o[i - 1] + 0.5 * o[i] + 0.25 * o[i + 1];
   const bpmOf = (L: number) => (60 * frameRate) / L;
+  const fromPreferred = (L: number) => Math.abs(Math.log2(bpmOf(L) / PREFERRED_BPM));
   let chosen = period;
   for (let guard = 0; guard < 2; guard++) {
     const faster = chosen / 2;
-    if (bpmOf(faster) > 210) break;
-    const need = bpmOf(faster) > 180 ? 0.7 : 0.4;
-    if (halfBalance(smooth, chosen) < need) break;
+    if (halfBalance(smooth, chosen) < HALVES_FIT) break;
+    if (fromPreferred(faster) >= fromPreferred(chosen)) break;
     chosen = faster;
   }
-  return { period: chosen, bpm: bpmOf(chosen), confidence };
+  // The other octave, when it fits the onsets about as well: offered to the
+  // listener beside the tempo, since only they can settle it.
+  let alt: 0.5 | 2 | null = null;
+  if (bpmOf(chosen) * 2 <= 210 && halfBalance(smooth, chosen) >= HALVES_FIT) alt = 2;
+  else if (chosen < period || (bpmOf(chosen * 2) >= 50 && halfBalance(smooth, chosen * 2) >= HALVES_FIT)) alt = 0.5;
+  return { period: chosen, bpm: bpmOf(chosen), confidence, alt };
 }
+
+/** The tempo listeners most often tap to; ambiguous octaves resolve toward it. */
+const PREFERRED_BPM = 105;
+/** Off-beat to on-beat strength at which both octaves of a period fit the onsets. */
+const HALVES_FIT = 0.4;
 
 /**
  * Folds the onset envelope at `period` and compares the strongest phase with

@@ -2598,6 +2598,12 @@ button.q-row:hover {
   border-color: var(--signal-line);
 }
 
+/* The other octave that fits the beat just as well. */
+.tempo-fix button.suggest {
+  color: var(--ink-2);
+  border-color: var(--signal-line);
+}
+
 .ms-value small {
   font-family: var(--font-mono);
   font-size: 12px;

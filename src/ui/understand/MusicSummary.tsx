@@ -6,7 +6,7 @@ import { camelot, chordName, chordRole, keyName, romanNumeral } from '../../anal
 import type { Analysis } from '../../analysis/types';
 import { formatTime } from '../../lib/format';
 import { usePlayer } from '../../store/player';
-import { useHub, useHubValue } from '../hooks';
+import { cls, useHub, useHubValue } from '../hooks';
 import { ChordPicker, KeyPicker, type ChordTarget } from './ChordFix';
 
 // Categorical and deliberately soft, so sections never read as status colours.
@@ -123,16 +123,33 @@ export function MusicSummary({ analysis, trackId }: { analysis: Analysis; trackI
         <span className="ms-value">
           {analysis.bpm.toLocaleString('id-ID', { maximumFractionDigits: 1 })} <small>BPM</small>
           <span className="tempo-fix">
-            <button onClick={() => adjustTempo(trackId, 0.5)} title="Tempo terbaca dua kali terlalu cepat? Bagi dua.">
+            <button
+              className={cls(analysis.tempoAlt === 0.5 && 'suggest')}
+              onClick={() => adjustTempo(trackId, 0.5)}
+              title="Tempo terbaca dua kali terlalu cepat? Bagi dua; disimpan untuk file ini."
+            >
               ½×
             </button>
-            <button onClick={() => adjustTempo(trackId, 2)} title="Tempo terbaca setengahnya (half-time)? Gandakan.">
+            <button
+              className={cls(analysis.tempoAlt === 2 && 'suggest')}
+              onClick={() => adjustTempo(trackId, 2)}
+              title="Tempo terbaca setengahnya (half-time)? Gandakan; disimpan untuk file ini."
+            >
               2×
             </button>
           </span>
         </span>
         <span className="ms-sub">
           <BeatDots />
+          {getFix(trackId)?.tempo ? (
+            <span className="ms-fixed">dipilih Anda</span>
+          ) : (
+            analysis.tempoAlt && (
+              <span className="ms-fixed" title="Ketukan lagu ini cocok dibaca di dua tempo. Pilih yang terasa saat Anda mengetuk mengikuti lagu.">
+                bisa juga {Math.round(analysis.bpm * analysis.tempoAlt)}
+              </span>
+            )
+          )}
         </span>
       </div>
       <div className="ms-cell wide">

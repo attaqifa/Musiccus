@@ -83,7 +83,7 @@ Tab ─► getDisplayMedia ─► MediaStreamSource ──────┘       
 | `src/ui` | Komponen antarmuka; `LyricsOverlay.tsx` (lirik kinetik), `LyricsPanel.tsx` (panel karaoke), `SignalPath.tsx` (jalur suara), `meters/` (Panel Pantau), `FileInfo.tsx` (kualitas file), `understand/` (termasuk `Character.tsx`, `FileEvidence.tsx`, `ChordSheet.tsx`, dan `ChordFix.tsx`), `studio/` (termasuk `Rack.tsx` dan `EqCurve.tsx`), `stems/` |
 | `public/worklets` | `meter-processor.js`: deteksi onset kick, snare, dan hat; `musiccus-capture` mengirim suara tab per blok untuk analisis live |
 | `src/pwa/sw.js` | Templat service worker; `vite.config.ts` menulisnya ke `dist/sw.js` dengan nomor versi build |
-| `src/dev` | `analysisLab.ts` dan `reactivityLab.ts`: lagu sintetis dengan jawaban yang diketahui, untuk mengukur akurasi analisis dan reaksi visual. `chordBench.ts`: mengukur kunci dan akor pada rekaman sungguhan, terhadap file .lab (format MIREX, seperti anotasi Isophonics dan Billboard) atau terhadap koreksi yang Anda simpan. `harmonyLab.ts`: menyetel detektor akor dan kunci pada rekaman beranotasi (setiap lagu dianalisis sekali, lalu setelannya dicoba ratusan kali dalam hitungan detik), dengan `bench-server.cjs` sebagai server lokal untuk audio dan anotasinya. Tidak ikut di-bundle |
+| `src/dev` | `analysisLab.ts` dan `reactivityLab.ts`: lagu sintetis dengan jawaban yang diketahui, untuk mengukur akurasi analisis dan reaksi visual. `chordBench.ts`: mengukur kunci dan akor pada rekaman sungguhan, terhadap file .lab (format MIREX, seperti anotasi Isophonics dan Billboard) atau terhadap koreksi yang Anda simpan. `beatBench.ts`: mengukur tempo dan ketukan pada rekaman sungguhan, terhadap anotasi beat atau tempo acuan. `harmonyLab.ts`: menyetel detektor akor dan kunci pada rekaman beranotasi (setiap lagu dianalisis sekali, lalu setelannya dicoba ratusan kali dalam hitungan detik), dengan `bench-server.cjs` sebagai server lokal untuk audio dan anotasinya. Tidak ikut di-bundle |
 
 Uji reaksi visual dan akurasi analisis dari konsol dev:
 
@@ -123,6 +123,29 @@ await lab.prepare('http://127.0.0.1:5199');                    // analisis sekal
 lab.evaluate({}, 'abbey');                                      // setelan sekarang pada satu album
 await lab.crossValidate(['abbey', 'revolver', 'pepper', 'queen']); // sisihkan satu album bergiliran
 ```
+
+## Akurasi tempo
+
+Tempo dibaca dua tahap. Autokorelasi onset dengan sisir empat kelipatan memilih periode ketukan, lalu pemeriksa oktaf memutuskan apakah periode itu sebenarnya dua ketukan. Dulu pemeriksa oktaf selalu mempercepat tempo kalau kedua paruh periode sama kuat. Padahal hi-hat, genjrengan gitar, atau bass per 1/8 juga membelah tempo yang benar menjadi dua paruh yang sama kuat. Akibatnya, dua dari tiga lagu uji terbaca dua kali lipat. Sekarang paruh yang sama kuat hanya berarti kedua oktaf cocok dengan onsetnya, dan yang dipilih adalah oktaf yang lebih dekat ke tempo yang paling sering diketuk pendengar (sekitar 105 BPM). Oktaf yang satunya ditawarkan di Pahami ("bisa juga 160"), karena hanya pendengar yang bisa memastikannya.
+
+| Lagu | Acuan | Sebelum | Sesudah | Ketukan yang kena kick/snare (±60 ms) |
+|---|---|---|---|---|
+| Malcolm Todd, Earrings | 80 (songbpm) | 160,1 | 80,0 | 53% ke 57% |
+| Malcolm Todd, Obsessica | 140 (songbpm) | 140,0 | 140,0 | 51% (tidak berubah) |
+| Fleetwood Mac, Silver Springs | sekitar 90, bervariasi (karaoke-version) | 179,8 | 90,0 | 55% ke 70% |
+
+Lagu sintetis di `analysisLab` tetap terbaca tepat (96, 140, 75, dan demo 120 BPM, dengan galat ketukan yang sama). Tiga lagu belum cukup untuk menyetel apa pun, jadi angka di atas hanya bukti bahwa kasus yang ditemukan sudah tertangani. Ukuran yang sebenarnya perlu diambil dari anotasi beat, misalnya anotasi beat Isophonics untuk lagu The Beatles yang dipakai di bench akor.
+
+Karena birama sekarang dua kali lebih panjang pada lagu yang dulu terbaca dua kali lipat, bagian lagu di lagu-lagu itu ikut berubah. Kernel Song Map dihitung dalam birama, jadi bagiannya lebih sedikit dan lebih panjang. Akor juga dibaca per ketukan yang lebih panjang, jadi jalankan ulang bench akor sebelum angka di atas dianggap berlaku untuk versi analisis ini.
+
+Ukur dengan folder berisi audio dan anotasi beat (`lagu.beats`, `lagu.beats.txt`, atau `lagu.txt`: satu ketukan per baris, opsional diikuti posisinya di birama, 1 = awal birama) atau tempo acuan (`lagu.bpm`):
+
+```js
+const b = await import('/src/dev/beatBench.ts');
+await b.benchBeatsFolder();
+```
+
+Hasilnya mengikuti mir_eval dan MIREX: tempo benar dalam 4% (Acc1), benar sampai kelipatan 2 atau 3 (Acc2), berapa salah oktaf yang terselesaikan oleh tawaran ×2/½, serta F-measure ketukan dan awal birama dalam ±70 ms.
 
 ## Roadmap
 
