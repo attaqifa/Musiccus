@@ -187,7 +187,7 @@ export function ChordSheet({ analysis, trackId }: { analysis: Analysis; trackId:
               const inner = (
                 <>
                   {b.section && (
-                    <span className="sheet-sec" style={{ color: sectionColor(b.section.label) }}>
+                    <span className="sheet-sec" style={{ color: sectionColor(b.section) }}>
                       {b.section.name === 'Bagian' ? `Bagian ${b.section.label}` : b.section.name}
                     </span>
                   )}

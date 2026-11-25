@@ -25,23 +25,34 @@ function drawStatic(ctx: CanvasRenderingContext2D, a: Analysis, chords: ChordSeg
   const xOf = (t: number) => (t / dur) * w;
   ctx.clearRect(0, 0, w, h);
 
-  for (const s of a.sections) {
+  a.sections.forEach((s, i) => {
     const x0 = xOf(s.t);
     const x1 = xOf(s.end);
-    const col = sectionColor(s.label);
+    const col = sectionColor(s);
+    // A run of the same section (Chorus, Chorus) reads as one block with one label.
+    const repeat = i > 0 && a.sections[i - 1].name === s.name && a.sections[i - 1].name !== 'Bagian';
+    const left = repeat ? x0 : x0 + 1;
     ctx.fillStyle = col + '2e';
-    ctx.fillRect(x0 + 1, 0, Math.max(1, x1 - x0 - 2), SEC_H);
+    ctx.fillRect(left, 0, Math.max(1, x1 - left - 1), SEC_H);
     ctx.fillStyle = col;
-    ctx.fillRect(x0 + 1, 0, Math.max(1, x1 - x0 - 2), 2);
+    ctx.fillRect(left, 0, Math.max(1, x1 - left - 1), 2);
+    if (repeat) {
+      ctx.fillStyle = col + '55';
+      ctx.fillRect(x0, 6, 1, SEC_H - 12);
+      return;
+    }
+    // The label gets the width of the whole run of this section, not just its first piece.
+    let runEnd = i;
+    while (s.name !== 'Bagian' && a.sections[runEnd + 1]?.name === s.name) runEnd++;
     const title = sectionTitle(s.name, s.label);
     ctx.font = `500 12px ${SANS}`;
-    if (x1 - x0 > ctx.measureText(title).width + 14) {
+    if (xOf(a.sections[runEnd].end) - x0 > ctx.measureText(title).width + 14) {
       ctx.fillStyle = C.ink;
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'left';
       ctx.fillText(title, x0 + 8, SEC_H / 2 + 1);
     }
-  }
+  });
 
   ctx.font = `500 10px ${MONO}`;
   ctx.textBaseline = 'middle';
@@ -120,7 +131,7 @@ function MapCanvas({ analysis }: { analysis: Analysis }) {
     if (m.section) {
       const x0 = (m.section.t / analysis.duration) * w;
       const x1 = (m.section.end / analysis.duration) * w;
-      ctx.strokeStyle = sectionColor(m.section.label);
+      ctx.strokeStyle = sectionColor(m.section);
       ctx.lineWidth = 1;
       ctx.strokeRect(x0 + 1.5, 0.5, Math.max(1, x1 - x0 - 3), SEC_H - 1);
     }

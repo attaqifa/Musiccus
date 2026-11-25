@@ -3,7 +3,7 @@ import { hub } from '../../audio/hub';
 import { chordsFor } from '../../analysis/chordView';
 import { adjustTempo, getFix } from '../../analysis/manager';
 import { camelot, chordName, chordRole, keyName, romanNumeral } from '../../analysis/theory';
-import type { Analysis } from '../../analysis/types';
+import type { Analysis, Section } from '../../analysis/types';
 import { formatTime } from '../../lib/format';
 import { usePlayer } from '../../store/player';
 import { cls, useHub, useHubValue } from '../hooks';
@@ -11,7 +11,17 @@ import { ChordPicker, KeyPicker, type ChordTarget } from './ChordFix';
 
 // Categorical and deliberately soft, so sections never read as status colours.
 export const SECTION_COLORS = ['#B9A8E8', '#86B8DA', '#D9B48E', '#8FC7AE', '#DD9DB5', '#B8BE7E'];
-export const sectionColor = (label: string) => SECTION_COLORS[(label.charCodeAt(0) - 65) % SECTION_COLORS.length];
+// One colour per kind of section, so every Chorus looks like every other Chorus.
+const NAMED_COLOR: Partial<Record<Section['name'], string>> = {
+  Intro: '#8FC7AE',
+  Verse: '#B9A8E8',
+  Chorus: '#D9B48E',
+  Puncak: '#DD9DB5',
+  Bridge: '#86B8DA',
+  Outro: '#B8BE7E',
+};
+export const sectionColor = (s: Pick<Section, 'name' | 'label'>) =>
+  NAMED_COLOR[s.name] ?? SECTION_COLORS[(s.label.charCodeAt(0) - 65) % SECTION_COLORS.length];
 
 export function BeatDots() {
   const dots = useRef<(HTMLSpanElement | null)[]>([]);
@@ -25,18 +35,16 @@ export function BeatDots() {
       el.style.setProperty('--pulse', on ? String(0.35 + m.beatPulse * 0.65) : '0');
     }
     if (bar.current) {
-      const text = m.ready && m.barIndex >= 0 ? `${m.barIndex + 1}.${m.beatInBar + 1}` : '—';
+      const text = m.ready && m.barIndex >= 0 ? `birama ${m.barIndex + 1}` : '';
       if (bar.current.textContent !== text) bar.current.textContent = text;
     }
   });
   return (
-    <span className="beat-dots" aria-hidden="true">
+    <span className="beat-dots" aria-hidden="true" title="Ketukan dalam birama; titik besar adalah ketukan pertama.">
       {[0, 1, 2, 3].map((i) => (
         <span key={i} ref={(el) => void (dots.current[i] = el)} className={i === 0 ? 'down' : ''} />
       ))}
-      <span className="bar-pos" ref={bar}>
-        —
-      </span>
+      <span className="bar-pos" ref={bar} />
     </span>
   );
 }
@@ -176,9 +184,11 @@ export function MusicSummary({ analysis, trackId }: { analysis: Analysis; trackI
       <div className="ms-cell wide">
         <span className="ms-label">Bagian lagu</span>
         <span className="ms-section">
-          {section && <i style={{ background: sectionColor(section.label) }} />}
+          {section && <i style={{ background: sectionColor(section) }} />}
           {section ? `${section.name === 'Bagian' ? `Bagian ${section.label}` : section.name}` : '—'}
-          {section && <small>· {section.label}</small>}
+          {section && section.name !== 'Bagian' && (
+            <small title="Bagian dengan huruf yang sama terdengar mirip.">· {section.label}</small>
+          )}
         </span>
         <span className="ms-sub">
           {next ? `Berikutnya ${next.name === 'Bagian' ? `bagian ${next.label}` : next.name} di ${formatTime(next.t)}` : 'Bagian terakhir'}

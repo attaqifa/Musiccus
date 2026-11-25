@@ -8,6 +8,8 @@ import { BeatDots } from './MusicSummary';
 /** Large chord readout over the stage, with a countdown to the next section. */
 export function MusicHud() {
   const nowId = usePlayer((s) => s.now?.trackId);
+  // The open panel already shows key, tempo and beat; the stage keeps only the chord.
+  const panelOpen = usePlayer((s) => s.ui.inspector);
   const { analysis } = useAnalysis(nowId);
   const chord = useHubValue((s) => s.music.chord);
   const next = useHubValue((s) => s.music.nextSection);
@@ -32,11 +34,13 @@ export function MusicHud() {
         <span className="hud-name">{chord ? chordName(chord, key) : '—'}</span>
         {chord && <span className="hud-numeral">{romanNumeral(chord, key)}</span>}
       </div>
-      <div className="hud-meta">
-        <span>{keyName(key)}</span>
-        <span>{analysis.bpm.toLocaleString('id-ID', { maximumFractionDigits: 1 })} BPM</span>
-        <BeatDots />
-      </div>
+      {!panelOpen && (
+        <div className="hud-meta">
+          <span>{keyName(key)}</span>
+          <span>{analysis.bpm.toLocaleString('id-ID', { maximumFractionDigits: 1 })} BPM</span>
+          <BeatDots />
+        </div>
+      )}
       {next && (
         <div className="hud-next">
           <span>→ {next.name === 'Bagian' ? `Bagian ${next.label}` : next.name}</span>

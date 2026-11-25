@@ -132,7 +132,7 @@ interface PlayerState {
  * and only one of them fits at a time.
  */
 export const compactQuery = typeof matchMedia === 'function' ? matchMedia('(max-width: 960px)') : null;
-const isCompact = () => compactQuery?.matches ?? false;
+export const isCompact = () => compactQuery?.matches ?? false;
 
 /**
  * The render quality "Otomatis" picks for this device: phones, tablets and

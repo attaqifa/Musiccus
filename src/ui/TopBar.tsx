@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAnalysis } from '../analysis/manager';
 import { formatRate } from '../lib/format';
 import { TIER_LABEL, tierOf } from '../library/metadata';
-import { setSettings, setUi, usePlayer, type Mode } from '../store/player';
+import { isCompact, setSettings, setUi, usePlayer, type Mode } from '../store/player';
 import { FileInfo } from './FileInfo';
 import { fileQuality } from './fileQuality';
 import { cls } from './hooks';
@@ -110,7 +110,9 @@ export function TopBar() {
             className={cls('mode', m.id === ui.mode && 'active')}
             aria-current={m.id === ui.mode ? 'page' : undefined}
             title={m.hint}
-            onClick={() => setUi({ mode: m.id, inspector: true })}
+            // On a phone the lyrics drawer would cover the visual; Dengar shows
+            // the lyrics over the stage instead, so only the tool modes open it.
+            onClick={() => setUi({ mode: m.id, inspector: m.id === 'dengar' && isCompact() ? ui.inspector && ui.mode === 'dengar' : true })}
           >
             {m.label}
           </button>

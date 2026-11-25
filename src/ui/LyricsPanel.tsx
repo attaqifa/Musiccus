@@ -169,8 +169,8 @@ export function LyricsPanel() {
   } else if (state === 'error') {
     body = (
       <div className="pad">
-        <p className="empty-note">LRCLIB tidak bisa dihubungi, jadi lirik belum bisa dicari. Periksa koneksi internet.</p>
-        <button className="btn small" onClick={reloadLyrics}>
+        <p className="empty-note">Lirik belum bisa dicari karena LRCLIB tidak terhubung. Periksa koneksi internet.</p>
+        <button className="btn small lp-retry" onClick={reloadLyrics}>
           <RefreshCw size={14} aria-hidden="true" /> Coba lagi
         </button>
       </div>
@@ -226,8 +226,11 @@ export function LyricsPanel() {
   }
 
   const estimated = !!timed?.some((l) => l.estimated);
+  // Nothing to follow yet (no lyrics, still searching, or a fetch failed): the
+  // panel shrinks to its message instead of holding a tall empty column.
+  const compact = !lyrics && !searching && !(live && online);
   return (
-    <aside className="inspector lyrics-panel panel" aria-label="Lirik" ref={scroller}>
+    <aside className={cls('inspector lyrics-panel panel', compact && 'compact')} aria-label="Lirik" ref={scroller}>
       <div className="lp-head">
         <div className="lp-title">
           <span>Lirik</span>

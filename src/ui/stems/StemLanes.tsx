@@ -6,7 +6,7 @@ import { getStems } from '../../stems/manager';
 import { useStems } from '../../stems/store';
 import { ENV_RATE, STEM_COLOR, STEM_LABEL, STEMS } from '../../stems/types';
 import { seek } from '../../store/controller';
-import { usePlayer } from '../../store/player';
+import { setUi, usePlayer } from '../../store/player';
 import { useHubCanvas } from '../hooks';
 import { C, MONO } from '../palette';
 
@@ -123,27 +123,36 @@ function Lanes({ trackId }: { trackId: string }) {
 export function StemLanes() {
   const nowId = usePlayer((s) => s.now?.trackId);
   const status = useStems((s) => (nowId ? s.status[nowId] : undefined));
+  const panelOpen = usePlayer((s) => s.ui.inspector);
   if (!nowId) return null;
+  const busy = status?.state === 'running' || status?.state === 'queued';
+  const ready = status?.state === 'ready' && !!getStems(nowId);
+  // Not separated yet: the panel already explains and holds the button, so the
+  // stage stays clear. With the panel closed, one small prompt points to it.
+  if (!ready && !busy) {
+    if (panelOpen) return null;
+    return (
+      <div className="stem-hint panel">
+        <span>Lagu ini belum dipisahkan.</span>
+        <button className="btn small" onClick={() => setUi({ inspector: true })}>
+          Pisahkan
+        </button>
+      </div>
+    );
+  }
   return (
     <section className="stem-lanes panel" aria-label="Lajur stem">
-      {status?.state === 'ready' && getStems(nowId) ? (
+      {ready ? (
         <Lanes trackId={nowId} />
       ) : (
-        <div className="lanes-empty">
-          {status?.state === 'running' || status?.state === 'queued' ? (
-            <>
-              <p className="lanes-title">{status.stage}</p>
-              <div className="lanes-bar" role="progressbar" aria-valuenow={Math.round(status.progress * 100)} aria-valuemin={0} aria-valuemax={100}>
-                <i style={{ width: `${Math.max(2, status.progress * 100)}%` }} />
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="lanes-title">Belum dipisahkan</p>
-              <p className="empty-note">Pisahkan lagu ini di panel kanan untuk melihat dan mengatur vokal, drum, bass, dan instrumen lain secara terpisah.</p>
-            </>
-          )}
-        </div>
+        status && (
+          <div className="lanes-empty">
+            <p className="lanes-title">{status.stage}</p>
+            <div className="lanes-bar" role="progressbar" aria-valuenow={Math.round(status.progress * 100)} aria-valuemin={0} aria-valuemax={100}>
+              <i style={{ width: `${Math.max(2, status.progress * 100)}%` }} />
+            </div>
+          </div>
+        )
       )}
     </section>
   );

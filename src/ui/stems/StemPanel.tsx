@@ -164,8 +164,8 @@ function Mixer({ trackId }: { trackId: string }) {
           </button>
         ))}
       </div>
-      {!ready && <p className="empty-note">Lagu ini belum dipisahkan. Pengaturan mixer langsung berlaku begitu stemnya siap.</p>}
-      <div className="strips">
+      {!ready && <p className="empty-note">Mixer aktif setelah lagu dipisahkan. Pengaturan yang Anda ubah sekarang langsung berlaku begitu stemnya siap.</p>}
+      <div className={cls('strips', !ready && 'pending')}>
         {STEMS.map((id, k) => (
           <Strip key={id} id={id} k={k} trackId={trackId} mix={mix} />
         ))}
