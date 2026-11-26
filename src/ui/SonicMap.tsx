@@ -359,14 +359,14 @@ export function SonicMap() {
         </div>
         <div className="sm-tools">
           <div className="segmented small" role="radiogroup" aria-label="Tata letak">
-            <button role="radio" aria-checked={layout === 'mood'} className={cls(layout === 'mood' && 'on')} onClick={() => setLayout('mood')} title="Kiri ke kanan: tenang ke energik. Bawah ke atas: gelap ke cerah.">
+            <button role="radio" aria-checked={layout === 'mood'} className={cls(layout === 'mood' && 'on')} onClick={() => setLayout('mood')} data-tip="Kiri ke kanan: tenang ke energik. Bawah ke atas: gelap ke cerah.">
               Energi × suasana
             </button>
-            <button role="radio" aria-checked={layout === 'harmony'} className={cls(layout === 'harmony' && 'on')} onClick={() => setLayout('harmony')} title="Roda Camelot: lagu bertetangga bisa di-mix tanpa bentrok kunci.">
+            <button role="radio" aria-checked={layout === 'harmony'} className={cls(layout === 'harmony' && 'on')} onClick={() => setLayout('harmony')} data-tip="Roda Camelot: lagu bertetangga bisa di-mix tanpa bentrok kunci.">
               Harmoni
             </button>
           </div>
-          <button className="icon-btn" onClick={() => setUi({ sonicMap: false })} aria-label="Tutup peta koleksi" title="Tutup (G)">
+          <button className="icon-btn" onClick={() => setUi({ sonicMap: false })} aria-label="Tutup peta koleksi" data-tip="Tutup" data-kbd="G">
             <X size={16} />
           </button>
         </div>
@@ -429,7 +429,7 @@ export function SonicMap() {
                   <button className="btn small" onClick={() => void playQueue([sel.id], 0)}>
                     <Play size={13} aria-hidden="true" /> Putar
                   </button>
-                  <button className="btn small" onClick={() => start(sel)} title="Susun antrean yang berpindah kunci dengan mulus, tempo dan energi berdekatan">
+                  <button className="btn small" onClick={() => start(sel)} data-tip="Susun antrean yang berpindah kunci dengan mulus, tempo dan energi berdekatan">
                     <Route size={13} aria-hidden="true" /> Jalur harmonis
                   </button>
                 </div>

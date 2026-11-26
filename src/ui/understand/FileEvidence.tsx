@@ -262,7 +262,7 @@ function SpectrogramPlot({ s, cutoffHz }: { s: Spectrogram; cutoffHz: number | n
   };
 
   return (
-    <div className="spectro" onPointerMove={onMove} onPointerLeave={() => setHover(null)} onClick={onClick} title="Klik untuk lompat ke bagian ini">
+    <div className="spectro" onPointerMove={onMove} onPointerLeave={() => setHover(null)} onClick={onClick} data-tip="Klik untuk lompat ke bagian ini">
       <canvas ref={ref} className="meter-canvas spectro-canvas" role="img" aria-label="Spektrogram seluruh lagu" />
       <i ref={head} className="spectro-head" aria-hidden="true" />
       {hover && (
@@ -289,7 +289,7 @@ function SpectrogramCard({ trackId, a }: { trackId: string; a: Authenticity }) {
               onClick={() => setTall((v) => !v)}
               aria-pressed={tall}
               aria-label={tall ? 'Perkecil spektrogram' : 'Perbesar spektrogram'}
-              title={tall ? 'Perkecil' : 'Perbesar'}
+              data-tip={tall ? 'Perkecil' : 'Perbesar'}
             >
               {tall ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
             </button>

@@ -5,6 +5,7 @@ import { loadJSON, saveJSON } from '../../lib/storage';
 import { setSettings, usePlayer } from '../../store/player';
 import { cls, useHub, useHubCanvas } from '../hooks';
 import { C, MONO, signalA } from '../palette';
+import { Term } from '../Tip';
 import { Goniometer } from './Goniometer';
 import { Spectrum } from './Spectrum';
 
@@ -106,7 +107,7 @@ function LevelMeter() {
       className="meter-canvas"
       role="img"
       aria-label="Meter level kiri dan kanan"
-      title="Batang terang: RMS (rata-rata). Batang redup: peak. Garis: peak tertinggi barusan. Lampu atas menyala merah saat true peak melewati 0 dBFS."
+      data-tip="Batang terang: RMS (rata-rata). Batang redup: peak. Garis: peak tertinggi barusan. Lampu atas menyala merah saat true peak melewati 0 dBFS."
     />
   );
 }
@@ -187,8 +188,10 @@ function Loudness() {
   });
 
   const cell = (k: string, label: string, unit: string, tip: string) => (
-    <div className="readout" title={tip}>
-      <span className="readout-label">{label}</span>
+    <div className="readout">
+      <Term className="readout-label" tip={tip}>
+        {label}
+      </Term>
       <span className="readout-value">
         <span ref={(el) => void (refs.current[k] = el)}>—</span>
         <small>{unit}</small>
@@ -199,11 +202,11 @@ function Loudness() {
   return (
     <div className="loudness">
       <div className="readouts">
-        {cell('m', 'M', 'LUFS', 'Momentary: loudness 400 ms terakhir.')}
-        {cell('s', 'S', 'LUFS', 'Short-term: loudness 3 detik terakhir. Garis di bawah adalah riwayatnya.')}
-        {cell('i', 'I', 'LUFS', 'Integrated: loudness rata-rata sejak lagu mulai (EBU R128, dengan gating). Target streaming sekitar −14.')}
-        {cell('tp', 'TP', 'dBTP', 'True peak tertinggi sejak lagu mulai, termasuk puncak di antara sampel. Di atas −1 bisa clipping saat dikonversi.')}
-        {cell('plr', 'PLR', 'LU', 'Peak-to-loudness ratio: jarak true peak dengan loudness rata-rata. Makin kecil, makin padat masternya.')}
+        {cell('m', 'M', 'LUFS', 'Momentary: seberapa keras suaranya saat ini, dari 400 ms terakhir.')}
+        {cell('s', 'S', 'LUFS', 'Short-term: seberapa keras 3 detik terakhir. Garis di bawah adalah riwayatnya.')}
+        {cell('i', 'I', 'LUFS', 'Integrated: kerasnya rata-rata sejak lagu mulai (EBU R128, dengan gating). Layanan streaming umumnya menyamakan lagu di sekitar −14.')}
+        {cell('tp', 'TP', 'dBTP', 'True peak: puncak tertinggi sejak lagu mulai, termasuk di antara sampel. Di atas −1 bisa clipping saat dikonversi.')}
+        {cell('plr', 'PLR', 'LU', 'Peak-to-loudness ratio: jarak puncak dengan kerasnya rata-rata. Makin kecil, makin padat masternya.')}
       </div>
       <canvas ref={canvas} className="meter-canvas lhist" role="img" aria-label="Riwayat loudness short-term satu menit" />
     </div>
@@ -240,7 +243,7 @@ export function MeterBridge() {
           </button>
         ))}
       </div>
-      <button className="icon-btn mt-close" onClick={() => setSettings({ meters: false })} aria-label="Tutup Pantau" title="Tutup Pantau (O)">
+      <button className="icon-btn mt-close" onClick={() => setSettings({ meters: false })} aria-label="Tutup Pantau" data-tip="Tutup Pantau" data-kbd="O">
         <X size={14} aria-hidden="true" />
       </button>
       <div className="mt-grid">
@@ -256,7 +259,7 @@ export function MeterBridge() {
           <h5>
             Spektrum
             {compare && (
-              <span className="mt-legend" title="Garis putus-putus: lagu sebelum racikan. Area berwarna: hasil yang Anda dengar.">
+              <span className="mt-legend" data-tip="Garis putus-putus: lagu sebelum racikan. Area berwarna: hasil yang Anda dengar.">
                 <i className="solid" aria-hidden="true" />
                 hasil
                 <i className="dash" aria-hidden="true" />

@@ -64,10 +64,10 @@ export function Transport() {
       <div className="tp-track">
         {now ? <Cover trackId={now.trackId} size={48} /> : <div className="cover empty" style={{ width: 48, height: 48 }} />}
         <div className="tp-meta">
-          <span className="tp-title" title={title}>
+          <span className="tp-title" data-tip={title}>
             {title}
           </span>
-          <span className="tp-sub" title={sub}>
+          <span className="tp-sub" data-tip={sub}>
             {sub}
           </span>
         </div>
@@ -75,14 +75,14 @@ export function Transport() {
 
       {live ? (
         <div className="tp-controls">
-          <button className="play-btn stop" onClick={() => stopListening()} aria-label="Berhenti dengar tab" title="Berhenti dengar tab">
+          <button className="play-btn stop" onClick={() => stopListening()} aria-label="Berhenti dengar tab" data-tip="Berhenti dengar tab">
             <Square size={17} fill="currentColor" />
           </button>
         </div>
       ) : (
       <div className="tp-controls">
         <ShuffleButton className="tp-mode" />
-        <button className="icon-btn" onClick={() => void prev()} disabled={!now} aria-label="Sebelumnya" title="Sebelumnya (P)">
+        <button className="icon-btn" onClick={() => void prev()} disabled={!now} aria-label="Sebelumnya" data-tip="Sebelumnya" data-kbd="P">
           <SkipBack size={18} />
         </button>
         <button
@@ -90,11 +90,13 @@ export function Transport() {
           onClick={() => void togglePlay()}
           disabled={!hasQueue}
           aria-label={playing ? 'Jeda' : 'Putar'}
-          title={playing ? 'Jeda (Spasi)' : 'Putar (Spasi)'}
+          aria-keyshortcuts="Space"
+          data-tip={playing ? 'Jeda' : 'Putar'}
+          data-kbd="Spasi"
         >
           {status === 'loading' ? <LoaderCircle size={22} className="spin" /> : playing ? <Pause size={22} /> : <Play size={22} />}
         </button>
-        <button className="icon-btn" onClick={() => void next()} disabled={!now} aria-label="Berikutnya" title="Berikutnya (N)">
+        <button className="icon-btn" onClick={() => void next()} disabled={!now} aria-label="Berikutnya" data-tip="Berikutnya" data-kbd="N">
           <SkipForward size={18} />
         </button>
         <RepeatButton className="tp-mode" />
@@ -103,20 +105,20 @@ export function Transport() {
 
       {live ? (
         <div className="tp-seek tp-live" role="status">
-          <span className={cls('live-badge', live.silent && 'quiet')} title="Suara langsung dari tab">
+          <span className={cls('live-badge', live.silent && 'quiet')} data-tip="Suara langsung dari tab">
             <i aria-hidden="true" />
             LIVE
           </span>
-          <span className="tp-time" ref={elapsed} title="Lama suara terdengar">
+          <span className="tp-time" ref={elapsed} data-tip="Lama suara terdengar">
             0:00
           </span>
-          <span className="tp-live-note" title={liveNote}>
+          <span className="tp-live-note" data-tip={liveNote}>
             {liveNote}
           </span>
           <button
             className="link tp-live-fix"
             onClick={() => setLiveMonitor(!live.monitor)}
-            title={live.monitor ? 'Biarkan tab memutar suaranya sendiri; Musiccus menampilkan visualnya saja' : 'Putar suara tab lewat Musiccus'}
+            data-tip={live.monitor ? 'Biarkan tab memutar suaranya sendiri; Musiccus menampilkan visualnya saja' : 'Putar suara tab lewat Musiccus'}
           >
             {live.monitor ? 'Suaranya dobel?' : 'Tidak ada suara?'}
           </button>
@@ -140,7 +142,9 @@ export function Transport() {
           onClick={toggleMute}
           disabled={!ownVolume}
           aria-label={settings.muted ? 'Bunyikan' : 'Bisukan'}
-          title={ownVolume ? 'Mute (M)' : 'Volume diatur di tab sumbernya'}
+          aria-keyshortcuts="M"
+          data-tip={ownVolume ? (settings.muted ? 'Bunyikan' : 'Bisukan') : 'Volume diatur di tab sumbernya'}
+          data-kbd={ownVolume ? 'M' : undefined}
         >
           {settings.muted ? <VolumeX size={17} /> : <Volume2 size={17} />}
         </button>
@@ -154,8 +158,9 @@ export function Transport() {
           disabled={!ownVolume}
           onChange={(e) => setVolume(Number(e.target.value))}
           aria-label="Volume"
-          aria-valuetext={settings.muted ? 'Mute' : `${volumePct(settings.volumeDb)}%`}
-          title={ownVolume ? `Volume ${settings.muted ? 'mute' : `${volumePct(settings.volumeDb)}%`} (↑ ↓)` : 'Volume diatur di tab sumbernya'}
+          aria-valuetext={settings.muted ? 'Bisu' : `${volumePct(settings.volumeDb)}%`}
+          data-tip={ownVolume ? `Volume ${settings.muted ? 'bisu' : `${volumePct(settings.volumeDb)}%`}` : 'Volume diatur di tab sumbernya'}
+          data-kbd={ownVolume ? '↑ ↓' : undefined}
         />
       </div>
     </footer>
@@ -174,7 +179,9 @@ function LyricsButton() {
       onClick={() => useLyrics.setState({ show: !show })}
       aria-pressed={show}
       aria-label="Lirik di atas visual"
-      title={show ? 'Sembunyikan lirik di atas visual (Y)' : 'Tampilkan lirik di atas visual (Y)'}
+      aria-keyshortcuts="Y"
+      data-tip={show ? 'Sembunyikan lirik di atas visual' : 'Tampilkan lirik di atas visual'}
+      data-kbd="Y"
     >
       <MicVocal size={17} />
     </button>

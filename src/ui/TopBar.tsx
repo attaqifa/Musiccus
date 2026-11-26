@@ -22,11 +22,11 @@ export function BrandMark({ size = 22 }: { size?: number }) {
   );
 }
 
-const MODES: { id: Mode; label: string; hint: string }[] = [
-  { id: 'dengar', label: 'Dengar', hint: 'Visual yang hidup mengikuti musik, dengan lirik yang bergerak di setiap kata. (U untuk berganti)' },
-  { id: 'pahami', label: 'Pahami', hint: 'Kenali lagunya: tempo, kunci, akor, dan bagian-bagiannya. (U untuk berganti)' },
-  { id: 'bentuk', label: 'Racik', hint: 'Atur rasa suara: bass lebih tebal, slowed + reverb, kecepatan, dan nada. (B)' },
-  { id: 'stem', label: 'Stem', hint: 'Pisahkan vokal, drum, dan bass: untuk karaoke atau menikmati satu instrumen. (S)' },
+const MODES: { id: Mode; label: string; hint: string; kbd: string }[] = [
+  { id: 'dengar', label: 'Dengar', hint: 'Visual yang hidup mengikuti musik, dengan lirik yang bergerak di setiap kata.', kbd: 'U' },
+  { id: 'pahami', label: 'Pahami', hint: 'Kenali lagunya: tempo, kunci, akor, dan bagian-bagiannya.', kbd: 'U' },
+  { id: 'bentuk', label: 'Racik', hint: 'Atur rasa suara: bass lebih tebal, slowed + reverb, kecepatan, dan nada.', kbd: 'B' },
+  { id: 'stem', label: 'Stem', hint: 'Pisahkan vokal, drum, dan bass: untuk karaoke atau menikmati satu instrumen.', kbd: 'S' },
 ];
 
 /** The file's quality in one word (Hi-Res, Lossless, Lossy); click for the quality check. */
@@ -56,7 +56,7 @@ function FormatPill() {
   if (track.live) {
     return (
       <div className="fp-wrap">
-        <span className="format-pill tier-unknown" title="Suara dari tab browser. Kualitasnya mengikuti layanan musiknya.">
+        <span className="format-pill tier-unknown" data-tip="Suara dari tab browser. Kualitasnya mengikuti layanan musiknya.">
           <span className="fp-tier">Live</span>
           <span className="fp-spec">Tab {formatRate(now.sourceRate)}</span>
         </span>
@@ -76,7 +76,7 @@ function FormatPill() {
         className={cls('format-pill', `tier-${tier}`, q?.tone === 'warn' && 'suspect')}
         aria-expanded={open}
         aria-haspopup="dialog"
-        title="Kualitas file dan jalur suara"
+        data-tip="Kualitas file dan jalur suara"
         onClick={() => setOpen((o) => !o)}
       >
         <span className="fp-tier">{TIER_LABEL[tier]}</span>
@@ -109,7 +109,9 @@ export function TopBar() {
             key={m.id}
             className={cls('mode', m.id === ui.mode && 'active')}
             aria-current={m.id === ui.mode ? 'page' : undefined}
-            title={m.hint}
+            data-tip={m.hint}
+            data-kbd={m.kbd}
+            aria-keyshortcuts={m.kbd}
             // On a phone the lyrics drawer would cover the visual; Dengar shows
             // the lyrics over the stage instead, so only the tool modes open it.
             onClick={() => setUi({ mode: m.id, inspector: m.id === 'dengar' && isCompact() ? ui.inspector && ui.mode === 'dengar' : true })}
@@ -127,8 +129,10 @@ export function TopBar() {
             className={cls('icon-btn', ui.library && 'on')}
             onClick={() => setUi({ library: !ui.library })}
             aria-pressed={ui.library}
-            aria-label="Tampilkan library (L)"
-            data-tip="Koleksi lagu · L"
+            aria-label="Koleksi lagu"
+            aria-keyshortcuts="L"
+            data-tip="Koleksi lagu"
+            data-kbd="L"
           >
             <PanelLeft size={17} />
           </button>
@@ -137,8 +141,10 @@ export function TopBar() {
           className={cls('icon-btn', ui.inspector && 'on')}
           onClick={() => setUi({ inspector: !ui.inspector })}
           aria-pressed={ui.inspector}
-          aria-label={ui.mode === 'dengar' ? 'Tampilkan panel lirik (I)' : 'Tampilkan panel kanan (I)'}
-          data-tip={ui.mode === 'dengar' ? 'Lirik · I' : 'Panel kanan · I'}
+          aria-label={ui.mode === 'dengar' ? 'Panel lirik' : 'Panel kanan'}
+          aria-keyshortcuts="I"
+          data-tip={ui.mode === 'dengar' ? 'Panel lirik' : 'Panel kanan'}
+          data-kbd="I"
         >
           {ui.mode === 'dengar' ? <MicVocal size={17} /> : <PanelRight size={17} />}
         </button>
@@ -147,21 +153,23 @@ export function TopBar() {
             className={cls('icon-btn', meters && 'on')}
             onClick={() => setSettings({ meters: !meters })}
             aria-pressed={meters}
-            aria-label="Panel Pantau (O)"
-            data-tip="Meter dan spektrum · O"
+            aria-label="Pantau"
+            aria-keyshortcuts="O"
+            data-tip="Pantau: meter level, loudness, spektrum, dan stereo"
+            data-kbd="O"
           >
             <Activity size={17} />
           </button>
         )}
-        <button className="icon-btn" onClick={() => setUi({ hidden: true })} aria-label="Sembunyikan UI (H)" data-tip="Mode panggung · H">
+        <button className="icon-btn" onClick={() => setUi({ hidden: true })} aria-label="Mode panggung" aria-keyshortcuts="H" data-tip="Mode panggung: sembunyikan semua kontrol" data-kbd="H">
           <Eye size={17} />
         </button>
         {/* View toggles on the left of the rule, the app itself on the right. */}
         <span className="tb-rule" aria-hidden="true" />
-        <button className={cls('icon-btn', ui.settings && 'on')} onClick={() => setUi({ settings: !ui.settings })} aria-label="Pengaturan" data-tip="Pengaturan · ,">
+        <button className={cls('icon-btn', ui.settings && 'on')} onClick={() => setUi({ settings: !ui.settings })} aria-label="Pengaturan" aria-keyshortcuts="," data-tip="Pengaturan" data-kbd=",">
           <Settings2 size={17} />
         </button>
-        <button className="icon-btn tb-help" onClick={() => setUi({ help: true })} aria-label="Pintasan keyboard (?)" data-tip="Bantuan dan pintasan · ?">
+        <button className="icon-btn tb-help" onClick={() => setUi({ help: true })} aria-label="Panduan" aria-keyshortcuts="?" data-tip="Panduan mode ini dan pintasan" data-kbd="?">
           <CircleHelp size={17} />
         </button>
       </div>

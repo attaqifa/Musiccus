@@ -26,7 +26,7 @@ export function CompareButton({ className, short }: { className?: string; short?
       className={cls('compare-btn', compare && 'on', className)}
       disabled={!processing}
       aria-pressed={compare}
-      title="Bandingkan dengan suara asli: klik untuk berganti, atau tahan lalu lepas. Volumenya disamakan supaya perbandingannya adil. (A)"
+      data-tip="Bandingkan dengan suara asli: klik untuk berganti, atau tahan lalu lepas. Volumenya disamakan supaya perbandingannya adil." data-kbd="A"
       onPointerDown={(e) => {
         if (e.button !== 0) return;
         e.currentTarget.setPointerCapture(e.pointerId);
@@ -59,7 +59,7 @@ export function SoundChip() {
       <button
         className="sc-name"
         onClick={() => setUi({ mode: 'bentuk', inspector: true, hidden: false })}
-        title="Suara sedang diracik. Klik untuk membuka Racik."
+        data-tip="Suara sedang diracik. Klik untuk membuka Racik."
       >
         <i className="sc-dot" aria-hidden="true" />
         <span>{compare ? 'Suara asli' : label}</span>

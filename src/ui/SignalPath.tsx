@@ -137,7 +137,7 @@ export function SignalPath() {
       {sub && <p className="sp-sub">{sub}</p>}
       <ol className="sp-steps">
         {steps.map((s) => (
-          <li key={s.name} className={cls('sp-step', s.state)} title={STATE_LABEL[s.state]}>
+          <li key={s.name} className={cls('sp-step', s.state)} data-tip={STATE_LABEL[s.state]}>
             <span className="sp-name">{s.name}</span>
             <span className="sp-value">{s.value}</span>
             {s.note && <span className="sp-note">{s.note}</span>}

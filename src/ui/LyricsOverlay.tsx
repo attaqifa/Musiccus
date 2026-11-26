@@ -139,11 +139,11 @@ export function LyricsOverlay() {
       </p>
       <p className="ly-next">{lines[idx + 1]?.text ?? ''}</p>
       <div className="ly-offset" role="group" aria-label="Koreksi waktu lirik">
-        <button className="icon-btn" onClick={() => nudgeOffset(nowId, -0.1)} aria-label="Lirik lebih awal 0,1 detik" title="Lirik lebih awal">
+        <button className="icon-btn" onClick={() => nudgeOffset(nowId, -0.1)} aria-label="Lirik lebih awal 0,1 detik" data-tip="Lirik lebih awal">
           <Minus size={13} />
         </button>
         <span>{offsetText(offset)}</span>
-        <button className="icon-btn" onClick={() => nudgeOffset(nowId, 0.1)} aria-label="Lirik lebih lambat 0,1 detik" title="Lirik lebih lambat">
+        <button className="icon-btn" onClick={() => nudgeOffset(nowId, 0.1)} aria-label="Lirik lebih lambat 0,1 detik" data-tip="Lirik lebih lambat">
           <Plus size={13} />
         </button>
       </div>

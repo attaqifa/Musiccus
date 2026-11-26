@@ -78,7 +78,7 @@ export function WorldSwitcher() {
   const pick = (id: WorldId) => setSettings({ world: id });
   return (
     <div className="world-switch">
-      <div role="radiogroup" aria-label="Visual world">
+      <div role="radiogroup" aria-label="Dunia visual">
         {WORLDS.map((w, i) => (
           <button
             key={w.id}
@@ -87,7 +87,9 @@ export function WorldSwitcher() {
             aria-label={w.label}
             className={cls(world === w.id && 'on')}
             onClick={() => pick(w.id)}
-            title={`${w.hint} (${i + 1})`}
+            aria-keyshortcuts={String(i + 1)}
+            data-tip={w.hint}
+            data-kbd={String(i + 1)}
           >
             <w.icon size={14} aria-hidden="true" />
             <span className="ws-label">{w.label}</span>
@@ -113,7 +115,7 @@ export function NowPlayingOverlay() {
   return (
     <div className="np-overlay" key={now.trackId}>
       <p className="np-eyebrow">{track.live ? 'Live dari tab' : analysis ? `${keyName(analysis.key)}, ${Math.round(analysis.bpm)} BPM` : ''}</p>
-      <h1 className="np-title" title={version ? `${title} (${version})` : title}>
+      <h1 className="np-title" data-tip={version ? `${title} (${version})` : title}>
         {title}
       </h1>
       {version && <p className="np-version">{version}</p>}

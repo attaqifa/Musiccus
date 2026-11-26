@@ -258,6 +258,13 @@ body.idle .stage-exit {
   padding: 4px 0;
 }
 
+/* How a choice works, under what it gives. */
+.stem-how {
+  margin-top: -4px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
 .mono-note {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -685,41 +692,113 @@ body.idle .stage-exit {
   background: var(--line-2);
 }
 
-/* Quick labels under the top bar icons: they appear at once, unlike a native title. */
-.tb-actions .icon-btn[data-tip] {
+/* ------------------------------------------------------------ Penjelas -- */
+
+/* One bubble for every data-tip in the app (see ui/Tip.tsx). Fixed to the
+   viewport, so a scrolling panel can never clip it. */
+.tip {
+  position: fixed;
+  z-index: 80;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: min(300px, calc(100vw - 16px));
+  padding: 7px 11px;
+  border-radius: var(--r-s);
+  border: 1px solid var(--line-2);
+  background: var(--panel-solid);
+  box-shadow: 0 14px 32px -14px rgba(0, 0, 0, 0.7);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  text-wrap: pretty;
+  pointer-events: none;
+  animation: tip-in 0.14s var(--ease-out);
+}
+
+.tip.below {
+  animation-name: tip-in-below;
+}
+
+/* A tapped term stays open; a hairline in the song's colour says so. */
+.tip.pinned {
+  border-color: var(--key-line);
+}
+
+.tip kbd {
+  flex: none;
+  font-size: 12px;
+  padding: 1px 6px;
+  color: var(--ink-2);
+}
+
+@keyframes tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+@keyframes tip-in-below {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+/* A word or number that explains itself: dotted underline, no other dress. */
+.term {
+  display: inline;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-decoration: underline dotted;
+  /* In the word's own colour, so a key-coloured numeral keeps its hue. */
+  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: help;
+  transition: text-decoration-color 0.15s ease;
+}
+
+.term:hover,
+.term[aria-expanded='true'] {
+  text-decoration-color: currentColor;
+}
+
+/* Small words, comfortable fingers: the press area grows, the text does not move. */
+.term {
   position: relative;
 }
 
-.tb-actions .icon-btn[data-tip]::after {
-  content: attr(data-tip);
+.term::after {
+  content: '';
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  padding: 5px 9px;
-  border-radius: 6px;
-  border: 1px solid var(--line-2);
-  background: var(--panel-solid);
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 500;
+  inset: -6px -3px;
+}
+
+/* A term that is already a chip explains itself without the underline. */
+.term.camelot {
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.term.camelot:hover,
+.term.camelot[aria-expanded='true'] {
+  background: var(--key-dim);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
   white-space: nowrap;
-  opacity: 0;
-  transform: translateY(-2px);
-  transition: opacity 0.12s ease, transform 0.12s ease;
-  pointer-events: none;
-  z-index: 40;
-}
-
-.tb-actions .icon-btn[data-tip]:hover::after,
-.tb-actions .icon-btn[data-tip]:focus-visible::after {
-  opacity: 1;
-  transform: none;
-}
-
-@media (hover: none) {
-  .tb-actions .icon-btn[data-tip]::after {
-    display: none;
-  }
+  border: 0;
 }
 
 /* ------------------------------------------------------------ Library -- */
@@ -2323,6 +2402,68 @@ button.q-row:hover {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 22px;
+}
+
+/* Panduan: the guide for the current mode. */
+.guide-lede {
+  margin: -4px 0 20px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.guide-parts {
+  margin: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.guide-parts dt {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.guide-parts dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.guide-keys {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-2);
+}
+
+.guide-keys h3 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.guide-keys details {
+  margin-top: 14px;
+}
+
+.guide-keys summary {
+  width: fit-content;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.guide-keys summary:hover {
+  color: var(--ink-2);
+}
+
+.guide-keys details[open] summary {
+  margin-bottom: 8px;
 }
 
 .shortcuts {
@@ -4964,9 +5105,9 @@ button.fx-head:focus-visible {
   white-space: nowrap;
 }
 
+/* The knob refuses the drag itself, so its explanation can still be hovered. */
 .strip-knob.disabled {
   opacity: 0.35;
-  pointer-events: none;
 }
 
 .ms {
@@ -5178,9 +5319,9 @@ button.fx-head:focus-visible {
   .chip {
     min-height: 36px;
   }
-  /* Drag and drop and keyboard shortcuts do not exist on a touch screen. */
+  /* Drag and drop and keyboard shortcuts do not exist on a touch screen; the guide does. */
   .wl-drag-hint,
-  .tb-help {
+  .guide-keys {
     display: none;
   }
 }

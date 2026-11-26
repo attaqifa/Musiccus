@@ -1,6 +1,8 @@
 import { camelot, chordName, keyName } from '../../analysis/theory';
 import type { ChordSeg, KeyInfo } from '../../analysis/types';
 import { useLive } from '../../live/store';
+import { Term } from '../Tip';
+import { camelotTip, EXPLAIN } from './explain';
 import { BeatDots } from './MusicSummary';
 
 /** Chord names in the order they sounded, without repeats in a row or passing blips. */
@@ -30,24 +32,28 @@ export function LiveSummary() {
 
   return (
     <div className="music-summary">
-      <div className="ms-cell" title="Kunci nada dari setengah menit terakhir. Makin yakin seiring lagunya berjalan.">
-        <span className="ms-label">Kunci</span>
+      <div className="ms-cell">
+        <span className="ms-label">
+          <Term tip={EXPLAIN.liveKey}>Kunci</Term>
+        </span>
         <span className="ms-value">{key ? keyName(key) : '—'}</span>
         <span className="ms-sub">
           {key ? (
             <>
-              <span className="camelot" title="Kode Camelot: lagu dengan kode sama atau bersebelahan enak dicampur.">
+              <Term className="camelot" tip={camelotTip(camelot(key))}>
                 {camelot(key)}
-              </span>
-              keyakinan {Math.round(key.confidence * 100)}%
+              </Term>
+              <Term tip={EXPLAIN.liveConfidence}>keyakinan {Math.round(key.confidence * 100)}%</Term>
             </>
           ) : (
             waiting
           )}
         </span>
       </div>
-      <div className="ms-cell" title="Tempo dari analisis terakhir; ketukan di antaranya dilanjutkan dengan tempo yang sama.">
-        <span className="ms-label">Tempo</span>
+      <div className="ms-cell">
+        <span className="ms-label">
+          <Term tip={EXPLAIN.liveTempo}>Tempo</Term>
+        </span>
         <span className="ms-value">
           {bpm ? (
             <>

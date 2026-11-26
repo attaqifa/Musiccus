@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { droppedLyrics, filesFromDrop } from '../library/scan';
 import { attachLrc } from '../lyrics/lyrics';
 import { addFound, playQueue, setRgMode } from '../store/controller';
-import { getState, setSettings, setUi, usePlayer, type ColorSource, type QualityChoice, type Settings } from '../store/player';
+import { getState, setSettings, setUi, usePlayer, type ColorSource, type Mode, type QualityChoice, type Settings } from '../store/player';
 import { HeadphonePicker } from './HeadphonePicker';
 import { cls } from './hooks';
 import { GpuReadout, StemStorage } from './SettingsExtra';
@@ -17,7 +17,7 @@ function Segmented<T extends string>({ value, options, onChange, label }: {
   return (
     <div className="segmented" role="radiogroup" aria-label={label}>
       {options.map((o) => (
-        <button key={o.value} role="radio" aria-checked={value === o.value} className={cls(value === o.value && 'on')} onClick={() => onChange(o.value)} title={o.hint}>
+        <button key={o.value} role="radio" aria-checked={value === o.value} className={cls(value === o.value && 'on')} onClick={() => onChange(o.value)} data-tip={o.hint}>
           {o.label}
         </button>
       ))}
@@ -182,9 +182,10 @@ const SHORTCUTS: [string, string][] = [
   ['O', 'Panel Pantau: meter level, loudness, spektrum, dan stereo'],
   ['Y', 'Tampilkan / sembunyikan lirik'],
   ['H', 'Mode panggung: sembunyikan semua UI'],
-  ['L / I', 'Tampilkan library / panel kanan (lirik di mode Dengar)'],
+  ['L / I', 'Tampilkan koleksi / panel kanan (lirik di mode Dengar)'],
   ['F', 'Layar penuh'],
   [',', 'Pengaturan'],
+  ['?', 'Panduan mode ini'],
   ['Esc', 'Tutup dialog, antrean, atau Peta koleksi, keluar mode panggung'],
 ];
 
@@ -201,22 +202,98 @@ function Modal({ onClose, label, children, className }: { onClose: () => void; l
   );
 }
 
+/*
+ * The guide for the mode you are in: what it is for, what each part shows,
+ * and only then the keys. Touch screens get the guide without the keys.
+ */
+const GUIDE: Record<Mode, { name: string; lede: string; parts: [string, string][]; keys: string[] }> = {
+  dengar: {
+    name: 'Dengar',
+    lede: 'Visual yang hidup mengikuti musik. Tidak ada yang perlu diatur di sini; mode ini untuk mendengar.',
+    parts: [
+      ['Dunia visual', 'Nebula, Lanskap, atau Aurora, dipilih di bawah panggung. Warnanya mengikuti kunci lagu.'],
+      ['Lirik', 'Buka panelnya dari tombol mikrofon di atas, atau tampilkan liriknya bergerak di atas visual.'],
+      ['Mode panggung', 'Sembunyikan semua kontrol dan biarkan visualnya mengisi layar.'],
+      ['Antrean', 'Acak, ulang, dan timer tidur ada di tombol antrean.'],
+    ],
+    keys: ['Spasi', '1 – 3', 'Y', 'H', 'Q'],
+  },
+  pahami: {
+    name: 'Pahami',
+    lede: 'Kenali lagunya: rumahnya, ketukannya, akornya, dan bentuknya. Kata bergaris titik bisa diklik atau diketuk untuk penjelasan.',
+    parts: [
+      ['Kunci dan tempo', 'Kunci adalah rumah lagu, tempo adalah kecepatan ketukannya. Kode Camelot di sebelahnya membantu menyambung lagu.'],
+      ['Akor sekarang', 'Nama akor dan angka romawinya: I adalah rumah, V paling ingin pulang. Akor berikutnya tampil di kanan.'],
+      ['Bagian lagu', 'Intro, Verse, Chorus, dan seterusnya. Warna yang sama berarti bagian yang terdengar mirip.'],
+      ['Terbaca salah?', 'Ubah, ½× / 2×, dan Salah? menyimpan koreksi Anda untuk file ini.'],
+    ],
+    keys: ['Spasi', '← →', 'U'],
+  },
+  bentuk: {
+    name: 'Racik',
+    lede: 'Atur rasa suara tanpa merusak aslinya. Mulai dari preset; buka Rack kalau ingin mengatur sendiri.',
+    parts: [
+      ['Pilih rasa', 'Satu klik, langsung terdengar. Setiap preset mulai dari suara asli.'],
+      ['Rack', 'EQ, kompresor, ruang, dan modul lainnya. Klik nama modul untuk menyalakannya; lampunya menyala saat modul itu sedang mengubah suara.'],
+      ['Knob', 'Seret naik atau turun untuk mengubah, klik ganda untuk kembali ke nilai awal.'],
+      ['Dengar asli', 'Bandingkan dengan suara asli kapan saja. Volumenya disamakan supaya perbandingannya adil.'],
+    ],
+    keys: ['B', 'A'],
+  },
+  stem: {
+    name: 'Stem',
+    lede: 'Pisahkan lagu menjadi vokal, drum, bass, dan lainnya, lalu dengarkan satu per satu.',
+    parts: [
+      ['Pemisahan', 'Bersih (AI) untuk hasil yang rapi, Instan (DSP) untuk karaoke cepat. Hasil AI disimpan, jadi setiap lagu cukup dipisahkan sekali.'],
+      ['Mixer stem', 'Level, pan, mute, dan solo per stem, atau sekali klik: Karaoke, A cappella, Tanpa drum, dan lainnya.'],
+      ['Panggung 3D', 'Tempatkan setiap stem di ruang di sekitar kepala Anda.'],
+      ['Unduh', 'Setiap stem bisa diunduh sebagai WAV 24-bit.'],
+    ],
+    keys: ['S'],
+  },
+};
+
+function KeyList({ rows }: { rows: [string, string][] }) {
+  return (
+    <dl className="shortcuts">
+      {rows.map(([k, d]) => (
+        <div key={k}>
+          <dt>
+            <kbd>{k}</kbd>
+          </dt>
+          <dd>{d}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 export function HelpDialog() {
   const open = usePlayer((s) => s.ui.help);
+  const mode = usePlayer((s) => s.ui.mode);
   if (!open) return null;
+  const g = GUIDE[mode];
+  const here = SHORTCUTS.filter(([k]) => g.keys.includes(k));
   return (
-    <Modal onClose={() => setUi({ help: false })} label="Pintasan keyboard">
-      <h2>Pintasan keyboard</h2>
-      <dl className="shortcuts">
-        {SHORTCUTS.map(([k, d]) => (
-          <div key={k}>
-            <dt>
-              <kbd>{k}</kbd>
-            </dt>
+    <Modal onClose={() => setUi({ help: false })} label={`Panduan ${g.name}`} className="guide">
+      <h2>{g.name}</h2>
+      <p className="guide-lede">{g.lede}</p>
+      <dl className="guide-parts">
+        {g.parts.map(([t, d]) => (
+          <div key={t}>
+            <dt>{t}</dt>
             <dd>{d}</dd>
           </div>
         ))}
       </dl>
+      <div className="guide-keys">
+        <h3>Pintasan di mode ini</h3>
+        <KeyList rows={here} />
+        <details>
+          <summary>Semua pintasan keyboard</summary>
+          <KeyList rows={SHORTCUTS} />
+        </details>
+      </div>
     </Modal>
   );
 }

@@ -31,7 +31,7 @@ function Presets() {
             aria-checked={preset === p.id}
             className={cls('preset', preset === p.id && 'on')}
             onClick={() => applyPreset(p.id)}
-            title={`${p.label}: ${p.hint}`}
+            data-tip={`${p.label}: ${p.hint}`}
           >
             {p.short}
           </button>
@@ -43,10 +43,10 @@ function Presets() {
             // A saved name can be long: give it two or three cells instead of cutting it.
             style={m.name.length > 18 ? { gridColumn: 'span 3' } : m.name.length > 8 ? { gridColumn: 'span 2' } : undefined}
           >
-            <button role="radio" aria-checked={preset === m.id} onClick={() => applyMix(m.id)} title={`Racikan saya: ${m.name}`}>
+            <button role="radio" aria-checked={preset === m.id} onClick={() => applyMix(m.id)} data-tip={`Racikan saya: ${m.name}`}>
               {m.name}
             </button>
-            <button className="mine-del" onClick={() => deleteMix(m.id)} aria-label={`Hapus racikan ${m.name}`} title="Hapus racikan ini">
+            <button className="mine-del" onClick={() => deleteMix(m.id)} aria-label={`Hapus racikan ${m.name}`} data-tip="Hapus racikan ini">
               <X size={12} aria-hidden="true" />
             </button>
           </span>
@@ -75,7 +75,7 @@ function SaveMix() {
         className="btn small ghost"
         disabled={!processing || full}
         onClick={() => setName(suggestion === 'Racikan sendiri' ? '' : `${suggestion} saya`)}
-        title={full ? `Sudah ${MAX_MIXES} racikan. Hapus salah satu di Pilih rasa dulu.` : 'Simpan pengaturan ini sebagai racikan Anda sendiri, muncul di Pilih rasa.'}
+        data-tip={full ? `Sudah ${MAX_MIXES} racikan. Hapus salah satu di Pilih rasa dulu.` : 'Simpan pengaturan ini sebagai racikan Anda sendiri, muncul di Pilih rasa.'}
       >
         <Plus size={14} aria-hidden="true" />
         Jadikan racikan saya
@@ -125,7 +125,7 @@ function Actions() {
         className="btn small ghost"
         disabled={!!exporting || live}
         onClick={() => void exportCurrentTrack(24)}
-        title={live ? fileOnly : 'Simpan lagu dengan suara racikan ini sebagai file WAV 24-bit, misalnya versi slowed + reverb Anda sendiri.'}
+        data-tip={live ? fileOnly : 'Simpan lagu dengan suara racikan ini sebagai file WAV 24-bit, misalnya versi slowed + reverb Anda sendiri.'}
       >
         <Download size={14} aria-hidden="true" />
         {exporting ? `Menyimpan ${Math.round(exporting.progress * 100)}%` : 'WAV 24-bit'}
@@ -135,13 +135,13 @@ function Actions() {
           className="btn small ghost"
           disabled={live}
           onClick={() => void exportCurrentTrack(32)}
-          title={live ? fileOnly : 'WAV 32-bit float: tidak ada pembulatan, puncak di atas 0 dBFS tetap utuh untuk diolah lagi di DAW.'}
+          data-tip={live ? fileOnly : 'WAV 32-bit float: tidak ada pembulatan, puncak di atas 0 dBFS tetap utuh untuk diolah lagi di DAW.'}
         >
           <Download size={14} aria-hidden="true" />
           32-bit float
         </button>
       )}
-      <button className="btn small ghost" disabled={clean} onClick={resetStudio} title="Kembali ke suara asli">
+      <button className="btn small ghost" disabled={clean} onClick={resetStudio} data-tip="Kembali ke suara asli">
         <RotateCcw size={14} aria-hidden="true" />
         Asli
       </button>

@@ -1,7 +1,7 @@
 import { AppWindow, FilePlus, FolderOpen, ListPlus, Orbit, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { formatTime } from '../lib/format';
-import { shortFormat, tierOf } from '../library/metadata';
+import { longFormat, shortFormat, tierOf } from '../library/metadata';
 import { tabCaptureSupported } from '../live/tab';
 import { enqueue, folderOf, listenToTab, playQueue } from '../store/controller';
 import { setUi, usePlayer, type Track } from '../store/player';
@@ -118,25 +118,25 @@ export function LibraryPanel() {
   const parsing = pending > 0 && !scanning;
 
   return (
-    <aside className="library panel" aria-label="Library">
+    <aside className="library panel" aria-label="Koleksi">
       <div className="lib-head">
         <div className="lib-title">
           <span className="lib-name">{name ?? 'Koleksi'}</span>
           <span className="lib-count">{total0.toLocaleString('id-ID')} lagu</span>
         </div>
         <div className="lib-actions">
-          <button className="icon-btn" onClick={() => setUi({ sonicMap: !usePlayer.getState().ui.sonicMap })} aria-label="Peta koleksi (G)" title="Peta koleksi: galaksi lagu menurut energi, suasana, dan kunci (G)">
+          <button className="icon-btn" onClick={() => setUi({ sonicMap: !usePlayer.getState().ui.sonicMap })} aria-label="Peta koleksi" aria-keyshortcuts="G" data-tip="Peta koleksi: galaksi lagu menurut energi, suasana, dan kunci" data-kbd="G">
             <Orbit size={16} />
           </button>
           {canTab && (
-            <button className="icon-btn" onClick={() => void listenToTab()} aria-label="Dengar dari tab" title="Dengar dari tab: Spotify, YouTube Music, atau situs musik lain">
+            <button className="icon-btn" onClick={() => void listenToTab()} aria-label="Dengar dari tab" data-tip="Dengar dari tab: Spotify, YouTube Music, atau situs musik lain">
               <AppWindow size={16} />
             </button>
           )}
-          <button className="icon-btn" onClick={pickFolder} aria-label="Buka folder musik" title="Buka folder musik">
+          <button className="icon-btn" onClick={pickFolder} aria-label="Buka folder musik" data-tip="Buka folder musik">
             <FolderOpen size={16} />
           </button>
-          <button className="icon-btn" onClick={() => pickFiles(false)} aria-label="Tambah file" title="Tambah file">
+          <button className="icon-btn" onClick={() => pickFiles(false)} aria-label="Tambah file" data-tip="Tambah file">
             <FilePlus size={16} />
           </button>
         </div>
@@ -147,7 +147,7 @@ export function LibraryPanel() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Cari judul, artis, album"
-          aria-label="Cari di library"
+          aria-label="Cari di koleksi"
           spellCheck={false}
         />
         {query && (
@@ -193,7 +193,7 @@ export function LibraryPanel() {
                       tabIndex={-1}
                       onClick={() => enqueue(r.ids, 'end')}
                       aria-label={`Tambah album “${r.title}” ke antrean`}
-                      title="Tambah album ke antrean (klik kanan untuk pilihan lain)"
+                      data-tip="Tambah album ke antrean (klik kanan untuk pilihan lain)"
                     >
                       <ListPlus size={15} />
                     </button>
@@ -220,13 +220,22 @@ export function LibraryPanel() {
                     play(r.qi);
                   }
                 }}
-                title={t.needsWasm ? `Format ${t.ext.toUpperCase()} belum bisa diputar di Musiccus` : 'Klik atau Enter untuk memutar, klik kanan untuk antrean'}
+                data-tip={t.needsWasm ? `Format ${t.ext.toUpperCase()} belum bisa diputar di Musiccus` : 'Klik atau Enter untuk memutar, klik kanan untuk antrean'}
               >
                 <span className="lt-no">
                   {isNow && status === 'playing' ? <NowBars /> : (m?.trackNo ?? '·')}
                 </span>
                 <span className="lt-title">{m?.title || t.name.replace(/\.[^.]+$/, '')}</span>
-                <span className={cls('lt-fmt', `tier-${tier}`)}>{t.needsWasm ? t.ext.toUpperCase() : shortFormat(m, t.ext)}</span>
+                {t.needsWasm ? (
+                  <span className={cls('lt-fmt', `tier-${tier}`)}>{t.ext.toUpperCase()}</span>
+                ) : (
+                  <>
+                    <span className={cls('lt-fmt', `tier-${tier}`)} data-tip={longFormat(m, t.ext)} aria-hidden="true">
+                      {shortFormat(m, t.ext)}
+                    </span>
+                    <span className="sr-only">{longFormat(m, t.ext)}</span>
+                  </>
+                )}
                 <span className="lt-dur">{m?.duration ? formatTime(m.duration) : ''}</span>
                 {!t.needsWasm && (
                   <button
@@ -237,7 +246,7 @@ export function LibraryPanel() {
                       enqueue([t.id], 'end');
                     }}
                     aria-label="Tambah ke antrean"
-                    title="Tambah ke antrean (klik kanan untuk pilihan lain)"
+                    data-tip="Tambah ke antrean (klik kanan untuk pilihan lain)"
                   >
                     <ListPlus size={15} />
                   </button>

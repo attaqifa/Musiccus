@@ -42,7 +42,7 @@ export function Section({
   };
   return (
     <section className={`insp-section ${collapsed ? 'collapsed' : ''}`}>
-      <button className="insp-head" onClick={toggle} aria-expanded={!collapsed} title={hint}>
+      <button className="insp-head" onClick={toggle} aria-expanded={!collapsed} data-tip={hint}>
         <span>{title}</span>
         <ChevronDown size={14} aria-hidden="true" />
       </button>

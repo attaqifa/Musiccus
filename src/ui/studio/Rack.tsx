@@ -44,7 +44,7 @@ function K(props: {
   hint?: string;
 }) {
   return (
-    <div className={cls('fx-knob', props.disabled && 'off')} title={props.hint}>
+    <div className={cls('fx-knob', props.disabled && 'off')} data-tip={props.hint}>
       <Knob
         value={props.value}
         min={props.min}
@@ -56,6 +56,7 @@ function K(props: {
         onChange={props.onChange}
         bipolar={props.bipolar}
         disabled={props.disabled}
+        hint={props.hint}
         size={44}
       />
       <span className="fx-knob-label">{props.label}</span>
@@ -111,7 +112,7 @@ function Seg<T extends string>({ value, options, onChange, label, disabled }: {
           disabled={disabled}
           className={cls(value === o.value && 'on')}
           onClick={() => onChange(o.value)}
-          title={o.hint}
+          data-tip={o.hint}
         >
           {o.label}
         </button>
@@ -146,7 +147,7 @@ function Card({ title, on, active, onToggle, summary, off, children }: {
   return (
     <section className={cls('fx-card', on && 'on', !onToggle && 'fixed')}>
       {onToggle ? (
-        <button className="fx-head" aria-pressed={on} onClick={onToggle} title={on ? `Matikan ${title}` : `${off}. Klik untuk menyalakan.`}>
+        <button className="fx-head" aria-pressed={on} onClick={onToggle} data-tip={on ? `Matikan ${title}` : `${off}. Klik untuk menyalakan.`}>
           {head}
         </button>
       ) : (
@@ -221,7 +222,7 @@ function PitchCard({ s }: { s: StudioState }) {
           ]}
           onChange={(v) => setModule('pitch', { keepPitch: v === 'keep' })}
         />
-        <label className="fx-check" title="Saat nada digeser, suara penyanyi tidak terdengar seperti tupai atau raksasa.">
+        <label className="fx-check" data-tip="Saat nada digeser, suara penyanyi tidak terdengar seperti tupai atau raksasa.">
           <input type="checkbox" checked={p.formant} onChange={(e) => setModule('pitch', { formant: e.target.checked })} />
           Jaga warna vokal
         </label>
@@ -344,7 +345,7 @@ function GrMeter() {
     if (text.current) text.current.textContent = `${num(v)} dB`;
   });
   return (
-    <div className="gr-meter" title="Gain reduction: seberapa banyak kompresor sedang menekan level.">
+    <div className="gr-meter" data-tip="Gain reduction: seberapa banyak kompresor sedang menekan level.">
       <span>GR</span>
       <span className="gr-track">
         <span ref={bar} />
@@ -372,7 +373,7 @@ function CompCard({ s }: { s: StudioState }) {
       </div>
       <div className="fx-row">
         <GrMeter />
-        <span className="fx-sub" title="Dihitung dari threshold dan ratio, supaya hasilnya tidak sekadar lebih pelan.">
+        <span className="fx-sub" data-tip="Dihitung dari threshold dan ratio, supaya hasilnya tidak sekadar lebih pelan.">
           Makeup {signed(c.makeup)} dB otomatis
         </span>
       </div>
@@ -438,7 +439,7 @@ function StereoCard({ s }: { s: StudioState }) {
         />
         <K label="Balance" value={st.balance} min={-1} max={1} step={0.01} def={0} bipolar fmt={balanceText} onChange={(balance) => setModule('stereo', { balance })} />
       </div>
-      <label className="fx-check" title="Dengar campuran mono: cara cepat menemukan masalah fase atau instrumen yang hilang di speaker tunggal.">
+      <label className="fx-check" data-tip="Dengar campuran mono: cara cepat menemukan masalah fase atau instrumen yang hilang di speaker tunggal.">
         <input type="checkbox" checked={st.mono} onChange={(e) => setModule('stereo', { mono: e.target.checked })} />
         Cek mono
       </label>
@@ -529,7 +530,7 @@ function OutputCard({ s }: { s: StudioState }) {
     <Card title="Output" on active={Math.abs(o.gain) > 0.01} summary={o.gain ? `${signed(o.gain)} dB` : '0 dB'} off="">
       <div className="fx-row">
         <K label="Gain" value={o.gain} min={-12} max={12} step={0.5} def={0} bipolar fmt={(v) => `${signed(v)} dB`} onChange={(gain) => setModule('output', { gain })} />
-        <label className="fx-check" title="Menahan puncak di −1 dBFS supaya racikan yang lebih keras tidak clipping.">
+        <label className="fx-check" data-tip="Menahan puncak di −1 dBFS supaya racikan yang lebih keras tidak clipping.">
           <input type="checkbox" checked={o.limiter} onChange={(e) => setModule('output', { limiter: e.target.checked })} />
           Limiter pengaman
         </label>

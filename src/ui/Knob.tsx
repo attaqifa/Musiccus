@@ -13,6 +13,8 @@ interface KnobProps {
   /** Draw the value arc from the middle, for controls centred on zero (gain, balance). */
   bipolar?: boolean;
   disabled?: boolean;
+  /** What the control does; leads the tip, before how to turn it. */
+  hint?: string;
 }
 
 const SWEEP = 270;
@@ -33,7 +35,7 @@ function arc(cx: number, cy: number, r: number, a0: number, a1: number) {
  * Hardware-style rotary control: drag vertically (Shift for fine), scroll,
  * arrow keys, double-click to reset.
  */
-export function Knob({ value, min, max, onChange, label, format, defaultValue, step = 0.5, size = 52, bipolar, disabled }: KnobProps) {
+export function Knob({ value, min, max, onChange, label, format, defaultValue, step = 0.5, size = 52, bipolar, disabled, hint }: KnobProps) {
   const drag = useRef<{ y: number; v: number } | null>(null);
   const el = useRef<HTMLDivElement>(null);
   const norm = Math.min(1, Math.max(0, (value - min) / (max - min)));
@@ -102,7 +104,7 @@ export function Knob({ value, min, max, onChange, label, format, defaultValue, s
       aria-valuemax={max}
       aria-valuenow={Math.round(value * 10) / 10}
       aria-valuetext={format(value)}
-      title={`${label}: ${format(value)}. Seret naik/turun, Shift untuk halus, klik ganda untuk reset.`}
+      data-tip={disabled ? (hint ?? label) : `${hint ?? `${label}: ${format(value)}.`} Seret naik/turun (Shift untuk halus), klik ganda untuk reset.`}
       style={{ width: size, height: size }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}

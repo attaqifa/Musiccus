@@ -217,7 +217,7 @@ export function ChordPicker({ trackId, analysis, view, target, onClose }: { trac
         </button>
         <span className="fix-grow" />
         {wasFixed && (
-          <button className="btn ghost small" onClick={revert} title="Kembali ke akor yang didengar analisis.">
+          <button className="btn ghost small" onClick={revert} data-tip="Kembali ke akor yang didengar analisis.">
             Kembalikan
           </button>
         )}

@@ -25,7 +25,7 @@ export function ShuffleButton({ className }: { className?: string }) {
       onClick={() => setShuffle(!on)}
       aria-pressed={on}
       aria-label="Acak"
-      title={on ? 'Acak: aktif' : 'Acak: mati'}
+      data-tip={on ? 'Acak: aktif' : 'Acak: mati'}
     >
       <Shuffle size={16} />
     </button>
@@ -40,7 +40,7 @@ export function RepeatButton({ className }: { className?: string }) {
       onClick={cycleRepeat}
       aria-pressed={mode !== 'off'}
       aria-label={REPEAT_LABEL[mode]}
-      title={`${REPEAT_LABEL[mode]} (klik untuk mengganti)`}
+      data-tip={`${REPEAT_LABEL[mode]} (klik untuk mengganti)`}
     >
       {mode === 'one' ? <Repeat1 size={16} /> : <Repeat size={16} />}
     </button>
@@ -125,7 +125,7 @@ function QueuePop() {
             <Shuffle size={14} aria-hidden="true" />
             Acak
           </button>
-          <button className={cls('q-mode', repeat !== 'off' && 'on')} aria-pressed={repeat !== 'off'} onClick={cycleRepeat} title="Klik untuk mengganti: mati, semua, satu lagu">
+          <button className={cls('q-mode', repeat !== 'off' && 'on')} aria-pressed={repeat !== 'off'} onClick={cycleRepeat} data-tip="Klik untuk mengganti: mati, semua, satu lagu">
             {repeat === 'one' ? <Repeat1 size={14} aria-hidden="true" /> : <Repeat size={14} aria-hidden="true" />}
             {REPEAT_LABEL[repeat]}
           </button>
@@ -153,11 +153,11 @@ function QueuePop() {
           <ol className="q-list">
             {upNext.map((id, i) => (
               <li key={`${id}:${i}`} className="q-item">
-                <button className="q-row" onClick={() => void playUpNext(i)} title="Putar sekarang">
+                <button className="q-row" onClick={() => void playUpNext(i)} data-tip="Putar sekarang">
                   <span className="q-title">{titleOf(tracks[id])}</span>
                   <span className="q-sub">{tracks[id]?.meta?.artist}</span>
                 </button>
-                <button className="q-remove" onClick={() => removeUpNext(i)} aria-label={`Hapus “${titleOf(tracks[id])}” dari antrean`} title="Hapus dari antrean">
+                <button className="q-remove" onClick={() => removeUpNext(i)} aria-label={`Hapus “${titleOf(tracks[id])}” dari antrean`} data-tip="Hapus dari antrean">
                   <X size={14} />
                 </button>
               </li>
@@ -175,7 +175,7 @@ function QueuePop() {
             {coming.map((qi, n) => (
               <li key={`${qi}:${n}`} className={cls('q-item', n === wrapAt && n > 0 && 'wrap')}>
                 {n === wrapAt && <span className="q-divider">Diulang dari awal</span>}
-                <button className={cls('q-row', tracks[queue[qi]]?.needsWasm && 'unsupported')} onClick={() => void playQueueAt(qi)} title="Putar sekarang">
+                <button className={cls('q-row', tracks[queue[qi]]?.needsWasm && 'unsupported')} onClick={() => void playQueueAt(qi)} data-tip="Putar sekarang">
                   <span className="q-title">{titleOf(tracks[queue[qi]])}</span>
                   <span className="q-sub">{tracks[queue[qi]]?.meta?.artist}</span>
                 </button>
@@ -223,7 +223,9 @@ export function QueueButton() {
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-label={label}
-        title={`${label} (Q)`}
+        aria-keyshortcuts="Q"
+        data-tip={label}
+        data-kbd="Q"
       >
         <ListMusic size={17} />
         {sleep && <Moon className="q-badge" size={10} aria-hidden="true" />}

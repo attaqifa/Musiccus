@@ -45,7 +45,7 @@ export function Welcome() {
               Buka folder musik
             </button>
             {canTab && (
-              <button className="btn" onClick={() => void listenToTab()} title="Pilih tab yang sedang memutar musik, lalu nyalakan Bagikan juga audio tab">
+              <button className="btn" onClick={() => void listenToTab()} data-tip="Pilih tab yang sedang memutar musik, lalu nyalakan Bagikan juga audio tab">
                 <AppWindow size={17} aria-hidden="true" />
                 Dengar dari tab
               </button>
@@ -54,7 +54,7 @@ export function Welcome() {
               <button
                 className="btn wl-resume"
                 onClick={() => void resumeListening()}
-                title={
+                data-tip={
                   last.point
                     ? `Putar lagi “${last.point.title}”${last.point.time > 0 ? ` dari ${formatTime(last.point.time)}` : ''} di folder "${last.folder}"`
                     : `Buka lagi folder "${last.folder}"`

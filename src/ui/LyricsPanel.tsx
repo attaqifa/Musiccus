@@ -129,7 +129,7 @@ function SyncedLines({ nowId, lines, scroller }: { nowId: string; lines: LyricLi
         <li key={i} className={cls(i < idx && 'past', i === idx && 'cur', !l.text && 'gap')}>
           <button
             onClick={() => (live ? syncLiveLine(l) : seek(Math.max(0, l.t + offset - 0.15)))}
-            title={live ? 'Klik saat baris ini mulai dinyanyikan' : `Lompat ke ${formatTime(Math.max(0, l.t + offset))}`}
+            data-tip={live ? 'Klik saat baris ini mulai dinyanyikan' : `Lompat ke ${formatTime(Math.max(0, l.t + offset))}`}
           >
             <Line line={l} cur={i === idx} word={word} />
           </button>
@@ -238,7 +238,7 @@ export function LyricsPanel() {
         </div>
         <div className="lp-actions">
           {lyrics?.synced && nowId && (
-            <div className="lp-offset" role="group" aria-label="Koreksi waktu lirik" title="Geser kalau lirik terasa mendahului atau terlambat">
+            <div className="lp-offset" role="group" aria-label="Koreksi waktu lirik" data-tip="Geser kalau lirik terasa mendahului atau terlambat">
               <button className="icon-btn" onClick={() => nudgeOffset(nowId, -0.1)} aria-label="Lirik lebih awal 0,1 detik">
                 <Minus size={13} />
               </button>
@@ -254,12 +254,12 @@ export function LyricsPanel() {
               onClick={() => setSearching(!searching)}
               aria-pressed={searching}
               aria-label="Cari lirik lain"
-              title="Lirik salah atau tidak pas? Cari versi lain"
+              data-tip="Lirik salah atau tidak pas? Cari versi lain"
             >
               {searching ? <X size={16} /> : <Search size={16} />}
             </button>
           )}
-          <button className="icon-btn lp-close" onClick={() => setUi({ inspector: false })} aria-label="Tutup panel lirik" title="Tutup: lirik pindah ke atas visual (I)">
+          <button className="icon-btn lp-close" onClick={() => setUi({ inspector: false })} aria-label="Tutup panel lirik" data-tip="Tutup: lirik pindah ke atas visual" data-kbd="I">
             <X size={16} />
           </button>
         </div>

@@ -98,6 +98,21 @@ export function shortFormat(meta: TrackMeta | undefined, ext: string): string {
   return `${meta.codec ?? ext.toUpperCase()} ${kbps}`.trim();
 }
 
+const rateText = (hz: number) =>
+  hz >= 1e6
+    ? `${(hz / 1e6).toLocaleString('id-ID', { maximumFractionDigits: 2 })} MHz`
+    : `${(hz / 1000).toLocaleString('id-ID', { maximumFractionDigits: 1 })} kHz`;
+
+/** The badge spelled out, for its explanation: "FLAC · 24-bit, 96 kHz · Hi-Res Lossless". */
+export function longFormat(meta: TrackMeta | undefined, ext: string): string {
+  if (!meta) return `${ext.toUpperCase()} · detail file belum dibaca`;
+  const rate = meta.sampleRate ? rateText(meta.sampleRate) : null;
+  const detail = meta.lossless
+    ? [meta.codec !== 'DSD' && meta.bitsPerSample ? `${meta.bitsPerSample}-bit` : null, rate]
+    : [meta.bitrate ? `${Math.round(meta.bitrate / 1000)} kbps` : null, rate];
+  return [meta.codec ?? ext.toUpperCase(), detail.filter(Boolean).join(', '), TIER_LABEL[tierOf(meta)]].filter(Boolean).join(' · ');
+}
+
 /* ------------------------------------------------------------- Cover art -- */
 
 const coverCache = new Map<string, Promise<string | null>>();

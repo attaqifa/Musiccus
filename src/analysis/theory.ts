@@ -62,7 +62,7 @@ export function chordRole(c: Pick<ChordSeg, 'root' | 'quality'>, key: KeyInfo | 
   if (iv === 7) return 'Dominan: tegang, ingin kembali ke rumah.';
   if (iv === 5) return 'Subdominan: melangkah menjauh dari rumah.';
   if (iv === 2 && !minorKey) return 'Supertonik: jembatan menuju dominan.';
-  if ((iv === 9 && !minorKey) || (iv === 3 && minorKey)) return 'Relatif: saudara terdekat tonik, warnanya berbalik.';
+  if ((iv === 9 && !minorKey) || (iv === 3 && minorKey)) return 'Relatif: berbagi nada dengan rumah, tapi warnanya berbalik.';
   if ((iv === 8 || iv === 10) && minorKey) return 'Akor mayor dari tangga minor: cerah tapi tetap sendu.';
   if (iv === 4 && !minorKey) return 'Mediant: lembut, setengah jalan antara rumah dan dominan.';
   return 'Akor pinjaman: warna dari luar tangga nada.';

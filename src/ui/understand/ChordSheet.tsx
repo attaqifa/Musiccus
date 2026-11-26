@@ -44,7 +44,7 @@ function SpeedSwitch() {
             aria-checked={Math.abs(rate - v) < 0.005}
             className={cls(Math.abs(rate - v) < 0.005 && 'on')}
             onClick={() => pick(v)}
-            title={v === 1 ? 'Kecepatan asli.' : 'Pelankan tanpa mengubah nada, supaya sempat pindah akor. Sama dengan Tempo di Racik › Pitch dan tempo.'}
+            data-tip={v === 1 ? 'Kecepatan asli.' : 'Pelankan tanpa mengubah nada, supaya sempat pindah akor. Sama dengan Tempo di Racik › Pitch dan tempo.'}
           >
             {Math.round(v * 100)}%
           </button>
@@ -149,7 +149,7 @@ export function ChordSheet({ analysis, trackId }: { analysis: Analysis; trackId:
               aria-checked={view === o.value}
               className={cls(view === o.value && 'on')}
               onClick={() => setSettings({ chordView: o.value })}
-              title={o.hint}
+              data-tip={o.hint}
             >
               {o.label}
             </button>
@@ -160,7 +160,7 @@ export function ChordSheet({ analysis, trackId }: { analysis: Analysis; trackId:
           className={cls('btn ghost small sheet-edit', edit && 'on')}
           aria-pressed={edit}
           onClick={() => setEdit(!edit)}
-          title="Ada akor yang salah? Klik akornya untuk memilih yang benar. Koreksi disimpan untuk file ini."
+          data-tip="Ada akor yang salah? Klik akornya untuk memilih yang benar. Koreksi disimpan untuk file ini."
         >
           <PencilLine size={14} aria-hidden="true" />
           Koreksi
@@ -169,11 +169,11 @@ export function ChordSheet({ analysis, trackId }: { analysis: Analysis; trackId:
       {edit && (
         <div className="sheet-fixbar">
           <p>Klik akor yang salah untuk memilih yang benar. Koreksi disimpan untuk file ini dan ikut dipakai menguji ketepatan analisis.</p>
-          <label className="fx-check" title="Semua akor di lembar ini, termasuk yang tidak Anda ubah, dicatat sebagai sudah benar.">
+          <label className="fx-check" data-tip="Semua akor di lembar ini, termasuk yang tidak Anda ubah, dicatat sebagai sudah benar.">
             <input type="checkbox" checked={checked} onChange={(e) => setSheetChecked(trackId, e.target.checked, view)} />
             Saya sudah memeriksa seluruh lembar ini
           </label>
-          <button className="link-btn" onClick={download} title="Akor dan kunci sebagai file .lab (format MIREX), untuk alat uji akor.">
+          <button className="link-btn" onClick={download} data-tip="Akor dan kunci sebagai file .lab (format MIREX), untuk alat uji akor.">
             <Download size={12} aria-hidden="true" /> Unduh .lab
           </button>
         </div>
@@ -232,7 +232,7 @@ export function ChordSheet({ analysis, trackId }: { analysis: Analysis; trackId:
                   style={{ flexGrow: b.beats }}
                   tabIndex={-1}
                   onClick={() => seek(b.t)}
-                  title={`Birama ${k + 1} · ${formatTime(b.t)}. Klik untuk memutar dari sini.`}
+                  data-tip={`Birama ${k + 1} · ${formatTime(b.t)}. Klik untuk memutar dari sini.`}
                 >
                   {inner}
                 </button>

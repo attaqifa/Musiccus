@@ -16,14 +16,17 @@ const num = (v: number, d = 1) => v.toFixed(d).replace('.', ',').replace('-', '�
 const dbText = (v: number) => (v === 0 ? '0 dB' : `${v > 0 ? '+' : ''}${num(v)} dB`);
 const panText = (v: number) => (Math.abs(v) < 0.01 ? 'Tengah' : `${v < 0 ? 'Kiri' : 'Kanan'} ${Math.round(Math.abs(v) * 100)}`);
 
-const ENGINES: Record<SeparationEngine, { label: string; note: string }> = {
+// Named by what comes out; how it works follows, quieter, for whoever wants it.
+const ENGINES: Record<SeparationEngine, { label: string; note: string; how: string }> = {
   ai: {
-    label: 'AI · kualitas studio',
-    note: 'HTDemucs (Meta, lisensi MIT) berjalan di GPU Anda lewat WebGPU. Model 126 MB diunduh sekali dari Hugging Face lalu disimpan; lagu Anda tidak pernah diunggah. Lagu 4 menit selesai dalam sekitar satu menit.',
+    label: 'Bersih · AI',
+    note: 'Vokal, drum, dan bass terpisah bersih, cukup untuk remix. Lagu 4 menit selesai dalam sekitar satu menit, di GPU Anda sendiri: lagunya tidak pernah diunggah. Pertama kali, model 126 MB diunduh sekali lalu disimpan.',
+    how: 'HTDemucs (Meta, lisensi MIT) lewat WebGPU; model dari Hugging Face.',
   },
   dsp: {
-    label: 'Cepat · DSP',
-    note: 'Instan dan tanpa unduhan: memisahkan dengan filter median dan posisi stereo. Hasilnya kasar, cukup untuk karaoke cepat, belum untuk remix.',
+    label: 'Instan · DSP',
+    note: 'Langsung jadi, tanpa unduhan, tapi kasar: cukup untuk karaoke cepat, belum untuk remix.',
+    how: 'Filter median dan posisi stereo.',
   },
 };
 
@@ -56,15 +59,15 @@ function Separation({ trackId }: { trackId: string }) {
           Dipisahkan · {status.engine === 'ai' ? 'AI' : 'DSP'} {how && `· ${how}`}
         </p>
         <div className="stem-actions">
-          <button className="btn small" onClick={exportStems} title="Unduh vokal, drum, bass, dan lainnya sebagai WAV 24-bit">
+          <button className="btn small" onClick={exportStems} data-tip="Unduh vokal, drum, bass, dan lainnya sebagai WAV 24-bit">
             <Download size={14} aria-hidden="true" /> Unduh stem
           </button>
           {status.engine === 'dsp' && (
-            <button className="btn small" onClick={() => void separateCurrent('ai')} title="Pisahkan ulang dengan model AI">
+            <button className="btn small" onClick={() => void separateCurrent('ai')} data-tip="Pisahkan ulang dengan model AI">
               <Sparkles size={14} aria-hidden="true" /> Pakai AI
             </button>
           )}
-          <button className="icon-btn" onClick={() => dropStems(trackId)} aria-label="Lepas stem" title="Lepas stem: kembali ke file asli">
+          <button className="icon-btn" onClick={() => dropStems(trackId)} aria-label="Lepas stem" data-tip="Lepas stem: kembali ke file asli">
             <X size={15} />
           </button>
         </div>
@@ -93,18 +96,19 @@ function Separation({ trackId }: { trackId: string }) {
             ))}
           </div>
           <p className="empty-note">{ENGINES[choice].note}</p>
+          <p className="stem-how">{ENGINES[choice].how}</p>
           {status?.state === 'error' && <p className="stem-error">{status.error}</p>}
           <button className="btn primary small" onClick={() => void separateCurrent()}>
             {choice === 'ai' && modelCached === false ? 'Unduh model (126 MB) dan pisahkan' : 'Pisahkan lagu ini'}
           </button>
         </>
       )}
-      <label className="fx-check" title="Lagu yang pernah dipisahkan dengan AI selalu dimuat ulang dari cache, otomatis.">
+      <label className="fx-check" data-tip="Lagu yang pernah dipisahkan dengan AI selalu dimuat ulang dari cache, otomatis.">
         <input type="checkbox" checked={auto} onChange={(e) => useStems.setState({ auto: e.target.checked })} />
         Pisahkan otomatis setiap lagu baru
       </label>
       {modelCached && (
-        <button className="link-btn" onClick={() => void deleteModel()} title="Hapus model AI dari penyimpanan browser">
+        <button className="link-btn" onClick={() => void deleteModel()} data-tip="Hapus model AI dari penyimpanan browser">
           Hapus model AI (126 MB)
         </button>
       )}
@@ -137,14 +141,14 @@ function Strip({ id, k, trackId, mix }: { id: StemId; k: number; trackId: string
         <Knob value={st.gainDb} min={-30} max={12} step={0.5} defaultValue={0} label={`Level ${STEM_LABEL[id]}`} format={dbText} onChange={(v) => setStrip(id, { gainDb: v })} size={32} />
         <span>{dbText(st.gainDb)}</span>
       </div>
-      <div className={cls('strip-knob', mix.stage && 'disabled')} title={mix.stage ? 'Saat panggung 3D aktif, posisi diatur di panggung.' : undefined}>
-        <Knob value={st.pan} min={-1} max={1} step={0.05} defaultValue={0} label={`Pan ${STEM_LABEL[id]}`} format={panText} onChange={(v) => setStrip(id, { pan: v })} size={32} />
+      <div className={cls('strip-knob', mix.stage && 'disabled')} data-tip={mix.stage ? 'Saat panggung 3D aktif, posisi diatur di panggung.' : undefined}>
+        <Knob value={st.pan} min={-1} max={1} step={0.05} defaultValue={0} label={`Pan ${STEM_LABEL[id]}`} format={panText} onChange={(v) => setStrip(id, { pan: v })} size={32} disabled={mix.stage} hint={mix.stage ? 'Saat panggung 3D aktif, posisi diatur di panggung.' : undefined} />
         <span>{Math.abs(st.pan) < 0.01 ? 'C' : `${st.pan < 0 ? 'L' : 'R'}${Math.round(Math.abs(st.pan) * 100)}`}</span>
       </div>
-      <button className={cls('ms', st.mute && 'on')} aria-pressed={st.mute} onClick={() => setStrip(id, { mute: !st.mute })} title={`Mute ${STEM_LABEL[id]}`}>
+      <button className={cls('ms', st.mute && 'on')} aria-pressed={st.mute} onClick={() => setStrip(id, { mute: !st.mute })} data-tip={`Mute ${STEM_LABEL[id]}`}>
         M
       </button>
-      <button className={cls('ms', st.solo && 'on')} aria-pressed={st.solo} onClick={() => setStrip(id, { solo: !st.solo })} title={`Solo ${STEM_LABEL[id]}`}>
+      <button className={cls('ms', st.solo && 'on')} aria-pressed={st.solo} onClick={() => setStrip(id, { solo: !st.solo })} data-tip={`Solo ${STEM_LABEL[id]}`}>
         S
       </button>
     </div>
@@ -159,7 +163,7 @@ function Mixer({ trackId }: { trackId: string }) {
     <div className="stem-mixer">
       <div className="stem-presets" role="group" aria-label="Preset mixer stem">
         {PRESETS.map((p) => (
-          <button key={p.id} className={cls('chip', preset === p.id && 'on')} aria-pressed={preset === p.id} onClick={() => applyPreset(p)} title={p.hint}>
+          <button key={p.id} className={cls('chip', preset === p.id && 'on')} aria-pressed={preset === p.id} onClick={() => applyPreset(p)} data-tip={p.hint}>
             {p.label}
           </button>
         ))}
@@ -338,7 +342,7 @@ function StagePad() {
           <input type="checkbox" checked={mix.stage} onChange={(e) => setStage(e.target.checked)} />
           Aktifkan panggung 3D binaural
         </label>
-        <button className="icon-btn" onClick={resetStage} aria-label="Kembalikan posisi panggung" title="Kembalikan posisi">
+        <button className="icon-btn" onClick={resetStage} aria-label="Kembalikan posisi panggung" data-tip="Kembalikan posisi">
           <RotateCcw size={14} />
         </button>
       </div>
@@ -390,7 +394,7 @@ export function StemPanel() {
           <Section id="s-sep" title="Pemisahan" hint="Pisahkan lagu menjadi vokal, drum, bass, dan lainnya.">
             <Separation trackId={nowId} />
           </Section>
-          <Section id="s-mix" title="Mixer stem" hint="Level, pan, mute, dan solo per stem. Saat semua netral, jalur kembali bit-transparan.">
+          <Section id="s-mix" title="Mixer stem" hint="Level, pan, mute, dan solo per stem. Saat semua netral, suaranya kembali persis seperti aslinya (bit-transparan).">
             <Mixer trackId={nowId} />
           </Section>
           <Section id="s-stage" title="Panggung 3D" hint="Tempatkan setiap stem di ruang di sekitar kepala Anda.">

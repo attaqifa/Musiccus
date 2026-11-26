@@ -9,6 +9,7 @@ import { cls } from './ui/hooks';
 import { LibraryPanel } from './ui/LibraryPanel';
 import { useIdleCursor, useShortcuts } from './ui/shortcuts';
 import { NowPlayingOverlay, Stage, WorldSwitcher } from './ui/Stage';
+import { TipLayer } from './ui/Tip';
 import { TopBar } from './ui/TopBar';
 import { Transport } from './ui/Transport';
 import { LyricsOverlay } from './ui/LyricsOverlay';
@@ -102,6 +103,7 @@ export default function App() {
       <CalibrationDialog />
       <HelpDialog />
       <Toasts />
+      <TipLayer />
       <DropOverlay />
     </div>
   );
