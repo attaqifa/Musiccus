@@ -101,7 +101,7 @@ export function WorldSwitcher() {
 }
 
 /**
- * Title, artist, and one line of music above them: the song's key and tempo in
+ * Title, artist, and one line of music under them: the song's key and tempo in
  * the key's own colour. File quality lives in the top bar's pill, not here.
  */
 export function NowPlayingOverlay() {
@@ -114,12 +114,12 @@ export function NowPlayingOverlay() {
   const sub = [artist, m?.album].filter(Boolean).join(', ') + (m?.year ? ` (${m.year})` : '');
   return (
     <div className="np-overlay" key={now.trackId}>
-      <p className="np-eyebrow">{track.live ? 'Live dari tab' : analysis ? `${keyName(analysis.key)}, ${Math.round(analysis.bpm)} BPM` : ''}</p>
       <h1 className="np-title" data-tip={version ? `${title} (${version})` : title}>
         {title}
       </h1>
       {version && <p className="np-version">{version}</p>}
       <p className="np-sub">{track.live ? artist || 'Suara dari tab browser' : sub}</p>
+      <p className="np-music">{track.live ? 'Live dari tab' : analysis ? `${keyName(analysis.key)}, ${Math.round(analysis.bpm)} BPM` : ''}</p>
     </div>
   );
 }

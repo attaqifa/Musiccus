@@ -30,7 +30,6 @@ export function Welcome() {
       <div className="wl-shade" aria-hidden="true" />
       <section className="welcome" aria-labelledby="welcome-title">
         <div className="wl-body">
-          <p className="wl-eyebrow">Musik yang bisa dilihat</p>
           <h1 id="welcome-title" className="wl-title">
             Dengar lebih <em>dalam.</em>
           </h1>
@@ -100,7 +99,7 @@ export function Welcome() {
             )}
             <div>
               <dt>Belum bisa diputar</dt>
-              <dd>ALAC, APE, WavPack, dan DSD. File ini tetap tampil di library, tetapi dilewati saat memutar.</dd>
+              <dd>ALAC, APE, WavPack, dan DSD. File ini tetap tampil di koleksi, tetapi dilewati saat memutar.</dd>
             </div>
           </dl>
         </div>

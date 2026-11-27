@@ -45,8 +45,8 @@ export function Transport() {
   const sub = live
     ? label?.artist || 'Suara dari tab browser'
     : track
-      ? [label?.artist, m?.album].filter(Boolean).join(' — ') || label?.version || ''
-      : 'Pilih lagu dari library';
+      ? [label?.artist, m?.album].filter(Boolean).join(', ') || label?.version || ''
+      : 'Pilih lagu dari koleksi';
   const playing = status === 'playing';
   // Without monitoring the tab plays its own sound, so the volume belongs to the tab.
   const ownVolume = !live || live.monitor;

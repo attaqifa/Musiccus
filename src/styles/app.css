@@ -1244,22 +1244,13 @@ body.idle .stage-exit {
   --title-shade: 0.5;
 }
 
-/* The song's key, in its own colour: the one line of music above the title. */
-.np-eyebrow {
-  min-height: 21px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--key);
-  animation: rise 0.8s var(--ease-out) both;
-}
-
 .np-title {
   font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(32px, 3.8vw, 60px);
   line-height: 1.04;
   letter-spacing: -0.025em;
-  margin: 8px 0 10px;
+  margin: 0 0 10px;
   text-wrap: balance;
   /* Long titles stop at two lines instead of filling the stage. */
   display: -webkit-box;
@@ -1287,6 +1278,16 @@ body.idle .stage-exit {
   text-overflow: ellipsis;
   color: var(--ink-2);
   animation: rise 0.9s 0.16s var(--ease-out) both;
+}
+
+/* The song's key, in its own colour: the one line of music, under the artist. Its height is held so the title does not jump when the analysis lands. */
+.np-music {
+  min-height: 21px;
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--key);
+  animation: rise 0.9s 0.22s var(--ease-out) both;
 }
 
 @keyframes rise {
@@ -1350,21 +1351,14 @@ body.idle .stage-exit {
   background: radial-gradient(ellipse 60% 55% at 38% 50%, rgba(6, 7, 8, 0.82), rgba(6, 7, 8, 0.45) 55%, transparent 80%);
 }
 
-.wl-eyebrow {
-  font-size: 14px;
-  color: var(--key);
-  animation: rise 0.9s var(--ease-out) both;
-  font-weight: 500;
-}
-
 .wl-title {
   font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(52px, 8vw, 112px);
   line-height: 0.94;
   letter-spacing: -0.035em;
-  margin: 18px 0 22px;
-  animation: rise 1s 0.08s var(--ease-out) both;
+  margin: 0 0 22px;
+  animation: rise 1s var(--ease-out) both;
 }
 
 .wl-title em {
@@ -1875,7 +1869,7 @@ body.idle .stage-exit {
 }
 
 .q-unit {
-  color: var(--ink-4);
+  font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
 }
@@ -1908,7 +1902,7 @@ body.idle .stage-exit {
   margin: 8px 0 2px;
   padding: 0 8px;
   font-size: 12px;
-  color: var(--ink-4);
+  color: var(--ink-3);
 }
 
 .q-row {
@@ -3304,7 +3298,7 @@ button.q-row:hover {
 
 .btn:disabled {
   opacity: 0.55;
-  cursor: progress;
+  cursor: not-allowed;
 }
 
 .segmented.small button {
@@ -3399,11 +3393,6 @@ button.q-row:hover {
 .preset-note b {
   font-weight: 500;
   color: var(--ink-2);
-}
-
-.preset-note em {
-  font-style: normal;
-  color: var(--ink-3);
 }
 
 .character {
@@ -3782,16 +3771,12 @@ button.fx-head:focus-visible {
   flex: 1;
   min-width: 0;
   text-align: right;
+  font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--ink-4);
+  color: var(--ink-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.fx-card.on .fx-sum {
-  font-family: var(--font-mono);
-  color: var(--ink-2);
 }
 
 /* On, the lamp is the module's power switch and the name folds its controls. */
@@ -3989,7 +3974,7 @@ button.fx-power:focus-visible {
 .eq-label {
   font-family: var(--font-mono);
   font-size: 12px;
-  fill: var(--ink-4);
+  fill: var(--ink-3);
   text-anchor: middle;
 }
 
@@ -4556,7 +4541,7 @@ button.fx-power:focus-visible {
 }
 
 .lp-lines li.past button {
-  color: var(--ink-4);
+  color: color-mix(in oklab, var(--ink-3) 65%, var(--ink-4));
 }
 
 .lp-lines li.cur button {
@@ -4680,7 +4665,7 @@ button.fx-power:focus-visible {
   grid-row: 1 / span 2;
   align-self: center;
   font-size: 12px;
-  color: var(--ink-4);
+  color: var(--ink-3);
   font-weight: 500;
 }
 

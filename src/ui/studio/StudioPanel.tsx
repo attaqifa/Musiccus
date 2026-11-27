@@ -53,8 +53,15 @@ function Presets() {
       </div>
       {note && (
         <p className="preset-note" aria-live="polite">
-          <b>{note.name}.</b> {note.text}
-          {tweaked && <em> Sudah disesuaikan di rack.</em>}
+          {tweaked ? (
+            <>
+              <b>{note.name}</b>, lalu disesuaikan di rack.
+            </>
+          ) : (
+            <>
+              <b>{note.name}.</b> {note.text}
+            </>
+          )}
         </p>
       )}
     </>
