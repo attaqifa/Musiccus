@@ -2,7 +2,7 @@ import { del, get, set } from 'idb-keyval';
 import { engine, type StemBuffers } from '../audio/engine';
 import { requestPersistence } from '../lib/storage';
 import { getDecoded, getFile } from '../store/controller';
-import { getState, toast, usePlayer } from '../store/player';
+import { getState, toast, undoToast, usePlayer } from '../store/player';
 import { encodeWav, saveBlob } from '../studio/export';
 import { stemGain } from './mixer';
 import { setStemStatus, useStems } from './store';
@@ -351,14 +351,52 @@ export function exportStems() {
   toast('Empat stem diunduh sebagai WAV 24-bit. Jika dijumlahkan, hasilnya sama dengan lagu aslinya.');
 }
 
-/** Removes the playing track's stems: back to the plain file. */
+/**
+ * Stops a separation, queued or running. The worker is the only way to halt
+ * a run mid-way, so it goes; model pieces already downloaded stay cached and
+ * the next try picks up from there.
+ */
+export function cancelSeparation(trackId: string) {
+  const i = queue.findIndex((j) => j.trackId === trackId);
+  if (i >= 0) queue.splice(i, 1);
+  let downloading = false;
+  if (running?.job.trackId === trackId) {
+    const { job } = running;
+    downloading = job.engine === 'ai' && !job.cached && useStems.getState().modelCached === false;
+    running = null;
+    worker?.terminate();
+    worker = null;
+    if (job.engine === 'ai') void refreshModelStatus();
+  }
+  useStems.setState((s) => {
+    const status = { ...s.status };
+    delete status[trackId];
+    return { status };
+  });
+  if (downloading) toast('Unduhan model dihentikan. Bagian yang sudah terunduh tetap tersimpan, jadi lain kali tinggal melanjutkan.');
+  pump();
+}
+
+/** Removes the playing track's stems: back to the plain file, with the way back on the toast. */
 export function dropStems(trackId: string) {
+  const had = loaded.get(trackId);
+  const was = useStems.getState().status[trackId];
   loaded.delete(trackId);
   engine.setStems(trackId, null);
   useStems.setState((s) => {
     const status = { ...s.status };
     delete status[trackId];
     return { status };
+  });
+  if (!had || !was) return;
+  undoToast('Stem dilepas; lagu kembali ke file asli.', () => {
+    const d = getDecoded(trackId);
+    // Only while the same song plays at the same rate; otherwise the stems no longer line up.
+    if (usePlayer.getState().now?.trackId !== trackId || loaded.has(trackId) || !d) return;
+    if (d.buffer.sampleRate !== had.rate || d.buffer.length !== had.length) return;
+    loaded.set(trackId, had);
+    engine.setStems(trackId, had.buffers);
+    setStemStatus(trackId, was);
   });
 }
 

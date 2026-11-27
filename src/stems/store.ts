@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { loadJSON, saveJSON } from '../lib/storage';
+import { undoToast } from '../store/player';
 import { DEFAULT_MIX, DEFAULT_POSITIONS, type StagePos, type StemMix, type StripState } from './mixer';
 import { STEMS, type SeparationEngine, type StemId } from './types';
 
@@ -30,7 +31,18 @@ interface StemStore extends StemPrefs {
 }
 
 const KEY = 'musiccus:stems';
-const DEFAULT_PREFS: StemPrefs = { mix: DEFAULT_MIX, engine: 'ai', auto: false };
+/**
+ * The AI separator downloads 126 MB the first time, so it is the default only
+ * where that is cheap: WebGPU present, not a phone, no data saver on.
+ */
+function defaultEngine(): SeparationEngine {
+  const nav = navigator as Navigator & { connection?: { saveData?: boolean }; userAgentData?: { mobile?: boolean } };
+  if (!('gpu' in navigator) || nav.connection?.saveData) return 'dsp';
+  const phone = nav.userAgentData?.mobile ?? matchMedia('(pointer: coarse) and (max-width: 820px)').matches;
+  return phone ? 'dsp' : 'ai';
+}
+
+const DEFAULT_PREFS: StemPrefs = { mix: DEFAULT_MIX, engine: defaultEngine(), auto: false };
 
 export const useStems = create<StemStore>(() => ({
   ...loadJSON(KEY, DEFAULT_PREFS),
@@ -73,13 +85,19 @@ export const PRESETS: StemPreset[] = [
   { id: 'rhythm', label: 'Ritme', hint: 'Hanya drum dan bass.', keep: ['drums', 'bass'] },
 ];
 
-/** Applies a preset: levels and pans reset, mutes follow the preset, solos cleared. */
+/**
+ * Applies a preset: levels and pans reset, mutes follow the preset, solos
+ * cleared. A mixer the listener set by hand can be taken back from the toast.
+ */
 export function applyPreset(p: StemPreset) {
+  const before = useStems.getState().mix.strips;
+  const custom = activePreset(useStems.getState().mix) === null;
   useStems.setState((s) => {
     const strips = { ...s.mix.strips };
     for (const id of STEMS) strips[id] = { gainDb: 0, pan: 0, solo: false, mute: !p.keep.includes(id) };
     return { mix: { ...s.mix, strips } };
   });
+  if (custom) undoToast(`Mixer stem diganti dengan “${p.label}”.`, () => useStems.setState((s) => ({ mix: { ...s.mix, strips: before } })));
 }
 
 /** The preset that matches the current mixer exactly, if any. */

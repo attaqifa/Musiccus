@@ -3,6 +3,7 @@ import { gpuInfo, isWindows, type GpuInfo } from '../lib/gpu';
 import { requestPersistence, storageInfo } from '../lib/storage';
 import { clearStemCache, deleteModel, refreshModelStatus, stemCacheSize } from '../stems/manager';
 import { useStems } from '../stems/store';
+import { ConfirmButton } from './ConfirmButton';
 
 const mb = (b: number) => `${Math.round(b / 1e6).toLocaleString('id-ID')} MB`;
 
@@ -67,16 +68,22 @@ export function StemStorage() {
             Lindungi data
           </button>
         )}
-        <button className="btn small" disabled={!modelCached} onClick={() => void deleteModel()}>
-          Hapus model AI
-        </button>
-        <button
+        <ConfirmButton
+          className="btn small"
+          disabled={!modelCached}
+          label="Hapus model AI"
+          confirm="Ya, hapus 126 MB"
+          note="Pemisahan AI berikutnya harus mengunduh model ini lagi."
+          onConfirm={() => void deleteModel()}
+        />
+        <ConfirmButton
           className="btn small"
           disabled={!cache}
-          onClick={() => void clearStemCache().then(() => stemCacheSize().then(setCache))}
-        >
-          Hapus stem tersimpan
-        </button>
+          label="Hapus stem tersimpan"
+          confirm={`Ya, hapus ${cache ? mb(cache) : ''}`}
+          note="Lagu yang sudah dipisahkan dengan AI harus diproses ulang."
+          onConfirm={() => void clearStemCache().then(() => stemCacheSize().then(setCache))}
+        />
       </div>
     </div>
   );

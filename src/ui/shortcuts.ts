@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLyrics } from '../lyrics/lyrics';
 import { next, prev, seekBy, setVolume, toggleMute, togglePlay } from '../store/controller';
-import { closeDrawers, compactQuery, getState, setSettings, setUi } from '../store/player';
+import { closeDrawers, compactQuery, getState, runToastAction, setSettings, setUi } from '../store/player';
 import { getStudio, setCompare } from '../studio/store';
 import { claimMediaKey } from './mediaSession';
 
@@ -13,8 +13,14 @@ function isTyping(el: EventTarget | null) {
 export function useShortcuts() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return;
+      if (isTyping(e.target)) return;
       const s = getState();
+      // Ctrl+Z (⌘Z) takes back the step the newest toast offers; behind a modal it waits.
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
+        if (!s.ui.calibration && !s.ui.help && runToastAction()) e.preventDefault();
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       const overlay = s.ui.settings || s.ui.calibration || s.ui.help;
       // A modal keeps the keys to itself: behind it nothing plays, seeks or switches; Esc (or ? for the guide) closes it.
       if ((s.ui.calibration || s.ui.help) && e.key !== 'Escape' && !(s.ui.help && e.key === '?')) return;

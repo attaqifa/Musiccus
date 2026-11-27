@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { droppedLyrics, filesFromDrop } from '../library/scan';
 import { attachLrc } from '../lyrics/lyrics';
 import { addFound, playQueue, setRgMode } from '../store/controller';
-import { getState, setSettings, setUi, usePlayer, type ColorSource, type Mode, type QualityChoice, type Settings } from '../store/player';
+import { getState, holdToast, runToastAction, setSettings, setUi, usePlayer, type ColorSource, type Mode, type QualityChoice, type Settings } from '../store/player';
 import { HeadphonePicker } from './HeadphonePicker';
 import { cls, useDialogFocus } from './hooks';
 import { GpuReadout, StemStorage } from './SettingsExtra';
@@ -187,6 +187,7 @@ const SHORTCUTS: [string, string][] = [
   ['F', 'Layar penuh'],
   [',', 'Pengaturan'],
   ['?', 'Panduan mode ini'],
+  ['Ctrl Z', 'Urungkan langkah yang ditawarkan notifikasi terakhir'],
   ['Esc', 'Tutup dialog, antrean, atau Peta koleksi, keluar mode panggung'],
 ];
 
@@ -305,8 +306,20 @@ export function Toasts() {
   return (
     <div className="toasts" role="status" aria-live="polite">
       {toasts.map((t) => (
-        <div key={t.id} className={cls('toast', t.kind === 'error' && 'error')}>
-          {t.text}
+        <div
+          key={t.id}
+          className={cls('toast', t.kind === 'error' && 'error', t.action && 'has-action')}
+          onMouseEnter={() => holdToast(t.id, true)}
+          onMouseLeave={() => holdToast(t.id, false)}
+          onFocus={() => holdToast(t.id, true)}
+          onBlur={() => holdToast(t.id, false)}
+        >
+          <span>{t.text}</span>
+          {t.action && (
+            <button className="toast-action" onClick={() => runToastAction(t.id)} aria-keyshortcuts="Control+Z" data-tip={t.action.label} data-kbd="Ctrl Z">
+              {t.action.label}
+            </button>
+          )}
         </div>
       ))}
     </div>

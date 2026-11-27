@@ -82,10 +82,17 @@ export interface NowPlaying {
   peaks: Float32Array | null;
 }
 
+/** One step the listener can take back, offered on a toast (and Ctrl+Z) while it is up. */
+export interface ToastAction {
+  label: string;
+  run: () => void;
+}
+
 export interface Toast {
   id: number;
   kind: 'info' | 'error';
   text: string;
+  action?: ToastAction;
 }
 
 export interface UiState {
@@ -255,19 +262,45 @@ compactQuery?.addEventListener('change', (e) => {
 
 let toastId = 0;
 const toastTimers = new Map<number, number>();
-export function toast(text: string, kind: Toast['kind'] = 'info', ms = 5200) {
+export function toast(text: string, kind: Toast['kind'] = 'info', ms = 5200, action?: ToastAction) {
   // The same message again (a run of songs failing alike) keeps the one shown up longer instead of stacking.
   const same = getState().toasts.find((t) => t.text === text && t.kind === kind);
   const id = same?.id ?? ++toastId;
-  if (!same) usePlayer.setState((s) => ({ toasts: [...s.toasts.slice(-3), { id, kind, text }] }));
+  if (!same) usePlayer.setState((s) => ({ toasts: [...s.toasts.slice(-3), { id, kind, text, action }] }));
+  else if (action) usePlayer.setState((s) => ({ toasts: s.toasts.map((t) => (t.id === id ? { ...t, action } : t)) }));
+  expireToast(id, ms);
+}
+
+/** A step that changed what the listener had made, with the way back on the toast. */
+export const undoToast = (text: string, run: () => void) => toast(text, 'info', 8000, { label: 'Urungkan', run });
+
+function expireToast(id: number, ms: number) {
   window.clearTimeout(toastTimers.get(id));
   toastTimers.set(
     id,
-    window.setTimeout(() => {
-      toastTimers.delete(id);
-      usePlayer.setState((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
-    }, ms),
+    window.setTimeout(() => dismissToast(id), ms),
   );
+}
+
+export function dismissToast(id: number) {
+  window.clearTimeout(toastTimers.get(id));
+  toastTimers.delete(id);
+  usePlayer.setState((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
+}
+
+/** A toast under the pointer or keyboard focus stays; let go, it leaves a few seconds later. */
+export function holdToast(id: number, hold: boolean) {
+  if (hold) window.clearTimeout(toastTimers.get(id));
+  else if (getState().toasts.some((t) => t.id === id)) expireToast(id, 3000);
+}
+
+/** Runs a toast's action and closes it; without an id, the newest toast that has one (Ctrl+Z). */
+export function runToastAction(id?: number): boolean {
+  const t = id === undefined ? getState().toasts.findLast((t) => t.action) : getState().toasts.find((t) => t.id === id);
+  if (!t?.action) return false;
+  dismissToast(t.id);
+  t.action.run();
+  return true;
 }
 
 export const currentTrack = (s: PlayerState = getState()): Track | undefined =>

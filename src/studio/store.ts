@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { loadJSON, saveJSON } from '../lib/storage';
+import { toast, undoToast } from '../store/player';
 import { PRESETS, presetState, type PresetId } from './presets';
 import { DEFAULT_STUDIO, studioProcessing, type StudioState } from './types';
 
@@ -97,8 +98,24 @@ export function setBand(index: number, patch: Partial<StudioState['eq']['bands']
   });
 }
 
+type Snapshot = Pick<StudioStore, 'state' | 'preset' | 'tweaked'>;
+
+/**
+ * Picking a preset or a saved mix replaces the whole rack. When the rack held
+ * the listener's own adjustments, the toast offers them back.
+ */
+function replaceRack(next: Snapshot, name: string) {
+  const s = getStudio();
+  const before: Snapshot = { state: s.state, preset: s.preset, tweaked: s.tweaked };
+  useStudio.setState({ ...next, compare: false });
+  if (before.tweaked && studioProcessing(before.state)) {
+    undoToast(`Racikan diganti dengan “${name}”.`, () => useStudio.setState({ ...before, compare: false }));
+  }
+}
+
 export function applyPreset(id: PresetId) {
-  useStudio.setState({ state: presetState(id), preset: id, tweaked: false, compare: false });
+  const label = PRESETS.find((p) => p.id === id)?.label ?? 'Asli';
+  replaceRack({ state: presetState(id), preset: id, tweaked: false }, label);
 }
 
 export const resetStudio = () => applyPreset('asli');
@@ -112,7 +129,7 @@ export function setCompare(on: boolean) {
 
 export function applyMix(id: string) {
   const mix = getStudio().mixes.find((m) => m.id === id);
-  if (mix) useStudio.setState({ state: complete(mix.state), preset: id, tweaked: false, compare: false });
+  if (mix) replaceRack({ state: complete(mix.state), preset: id, tweaked: false }, mix.name);
 }
 
 /** Saves the current rack under a name; returns its id, or null when the list is full. */
@@ -126,11 +143,29 @@ export function saveMix(name: string): string | null {
 }
 
 export function deleteMix(id: string) {
-  useStudio.setState((s) => ({
+  const s = getStudio();
+  const at = s.mixes.findIndex((m) => m.id === id);
+  if (at < 0) return;
+  const mix = s.mixes[at];
+  const named = s.preset === id;
+  useStudio.setState({
     mixes: s.mixes.filter((m) => m.id !== id),
     // The sound keeps playing as it is; it just no longer has a name.
-    ...(s.preset === id ? { preset: 'asli', tweaked: true } : {}),
-  }));
+    ...(named ? { preset: 'asli', tweaked: true } : {}),
+  });
+  undoToast(`Racikan “${mix.name}” dihapus.`, () => {
+    const now = getStudio();
+    if (now.mixes.some((m) => m.id === id)) return;
+    if (now.mixes.length >= MAX_MIXES) {
+      toast(`Daftar racikan sudah penuh, jadi “${mix.name}” tidak bisa dikembalikan. Hapus satu racikan dulu.`, 'error');
+      return;
+    }
+    const mixes = [...now.mixes];
+    mixes.splice(Math.min(at, mixes.length), 0, mix);
+    // The name returns to the sound only if the sound was not changed meanwhile.
+    const same = named && now.preset === 'asli' && now.state === s.state;
+    useStudio.setState({ mixes, ...(same ? { preset: id, tweaked: s.tweaked } : {}) });
+  });
 }
 
 /** What the rack is called right now, for the player bar. */

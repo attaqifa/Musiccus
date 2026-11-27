@@ -2,11 +2,12 @@ import { Download, RotateCcw, Sparkles, X } from 'lucide-react';
 import { useEffect, useRef, type KeyboardEvent, type PointerEvent, type WheelEvent } from 'react';
 import { engine } from '../../audio/engine';
 import { stemGain, type StemMix } from '../../stems/mixer';
-import { deleteModel, dropStems, exportStems, refreshModelStatus, separateCurrent, stemActivity, stemDb } from '../../stems/manager';
+import { cancelSeparation, deleteModel, dropStems, exportStems, refreshModelStatus, separateCurrent, stemActivity, stemDb } from '../../stems/manager';
 import { activePreset, applyPreset, PRESETS, resetStage, setPosition, setStage, setStrip, useStems } from '../../stems/store';
 import { STEM_COLOR, STEM_LABEL, STEMS, type SeparationEngine, type StemId } from '../../stems/types';
 import { useLive } from '../../live/store';
 import { usePlayer } from '../../store/player';
+import { ConfirmButton } from '../ConfirmButton';
 import { cls, useDragPointer, useHub, useHubCanvas } from '../hooks';
 import { Section } from '../Section';
 import { Knob } from '../Knob';
@@ -85,6 +86,10 @@ function Separation({ trackId }: { trackId: string }) {
               ? 'Berjalan di GPU di sela frame, jadi musik dan visual tetap lancar. Hasilnya disimpan: lagu ini tidak perlu dipisahkan lagi.'
               : 'Memisahkan di latar belakang.'}
           </p>
+          <button className="btn small stem-cancel" onClick={() => cancelSeparation(trackId)}>
+            <X size={14} aria-hidden="true" />
+            Batal
+          </button>
         </>
       ) : (
         <>
@@ -107,10 +112,15 @@ function Separation({ trackId }: { trackId: string }) {
         <input type="checkbox" checked={auto} onChange={(e) => useStems.setState({ auto: e.target.checked })} />
         Pisahkan otomatis setiap lagu baru
       </label>
-      {modelCached && (
-        <button className="link-btn" onClick={() => void deleteModel()} data-tip="Hapus model AI dari penyimpanan browser">
-          Hapus model AI (126 MB)
-        </button>
+      {modelCached && !busy && (
+        <ConfirmButton
+          className="link-btn"
+          label="Hapus model AI (126 MB)"
+          confirm="Ya, hapus 126 MB"
+          note="Pemisahan AI berikutnya harus mengunduh model ini lagi."
+          tip="Hapus model AI dari penyimpanan browser"
+          onConfirm={() => void deleteModel()}
+        />
       )}
     </div>
   );
