@@ -1,13 +1,12 @@
-import { Download, Plus, RotateCcw, X } from 'lucide-react';
+import { Download, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { useLive } from '../../live/store';
 import { exportCurrentTrack } from '../../studio/export';
 import { PRESETS } from '../../studio/presets';
-import { applyMix, applyPreset, deleteMix, MAX_MIXES, resetStudio, saveMix, soundLabel, useStudio } from '../../studio/store';
+import { applyMix, applyPreset, deleteMix, MAX_MIXES, saveMix, soundLabel, useStudio } from '../../studio/store';
 import { studioProcessing } from '../../studio/types';
 import { cls } from '../hooks';
 import { Section } from '../Section';
-import { CompareButton } from '../SoundChip';
 import { Rack } from './Rack';
 
 /**
@@ -110,16 +109,16 @@ function SaveMix() {
   );
 }
 
+/*
+ * Comparing lives in the player bar's sound chip (and on A), and going back to
+ * the original is the Asli preset, so this row only keeps things.
+ */
 function Actions() {
   const exporting = useStudio((s) => s.exporting);
-  const preset = useStudio((s) => s.preset);
-  const tweaked = useStudio((s) => s.tweaked);
-  const clean = preset === 'asli' && !tweaked;
   const live = useLive((s) => s.on);
   const fileOnly = 'Hanya untuk lagu dari file Anda sendiri. Suara dari tab tidak disimpan.';
   return (
     <div className="sound-actions">
-      <CompareButton className="btn small" />
       <SaveMix />
       <button
         className="btn small ghost"
@@ -141,10 +140,6 @@ function Actions() {
           32-bit float
         </button>
       )}
-      <button className="btn small ghost" disabled={clean} onClick={resetStudio} data-tip="Kembali ke suara asli">
-        <RotateCcw size={14} aria-hidden="true" />
-        Asli
-      </button>
     </div>
   );
 }
@@ -155,14 +150,16 @@ export function StudioPanel() {
       <Section id="s-presets" title="Pilih rasa" hint="Satu klik, langsung terdengar. Setiap preset mulai dari suara asli.">
         <Presets />
       </Section>
-      <Section id="s-rack" title="Rack" hint="Setiap modul tertutup saat mati. Klik namanya untuk menyalakan; lampu kuning berarti modul itu sedang mengubah suara.">
+      {/* The studio layer: folded until the listener opens it once, then remembered. */}
+      <Section
+        id="s-rack"
+        title="Rack"
+        closed
+        hint="Modul yang menyala ada di atas dengan ringkasannya. Klik nama modul untuk membuka pengaturannya, klik lampunya untuk mematikan; lampu kuning berarti modul itu sedang mengubah suara."
+      >
         <Rack />
       </Section>
-      <Section
-        id="s-save"
-        title="Bandingkan dan simpan"
-        hint="Dengar asli memutar lagu tanpa racikan dengan volume yang disamakan. Racikan bisa disimpan untuk dipakai lagi, atau lagunya disimpan sebagai file."
-      >
+      <Section id="s-save" title="Simpan" hint="Simpan pengaturan ini sebagai racikan Anda untuk dipakai lagi, atau simpan lagunya sebagai file WAV.">
         <Actions />
       </Section>
     </aside>

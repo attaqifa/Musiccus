@@ -3569,7 +3569,8 @@ button.q-row:hover {
   background: var(--raised-2);
 }
 
-.file-info + .rec-data {
+.file-info + .character-card,
+.character-card + .rec-data {
   margin-top: 18px;
   padding-top: 14px;
   border-top: 1px solid var(--line);
@@ -3704,7 +3705,7 @@ button.q-row:hover {
 }
 
 /* Modules in use come first and full width; the ones that are off sit below
-   as a compact two-column list of names; Output and the hint close the rack. */
+   as a compact two-column list of names; Output closes the rack. */
 .fx-rack > .fx-card.on {
   grid-column: 1 / -1;
   order: 0;
@@ -3717,11 +3718,6 @@ button.q-row:hover {
 .fx-rack > .fx-card.fixed {
   grid-column: 1 / -1;
   order: 2;
-}
-
-.fx-rack > .fx-hint {
-  grid-column: 1 / -1;
-  order: 3;
 }
 
 .fx-card:not(.on) .fx-head {
@@ -3787,6 +3783,47 @@ button.fx-head:focus-visible {
 .fx-card.on .fx-sum {
   font-family: var(--font-mono);
   color: var(--ink-2);
+}
+
+/* On, the lamp is the module's power switch and the name folds its controls. */
+.fx-top {
+  display: flex;
+  align-items: stretch;
+}
+
+.fx-power {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  border-radius: var(--r-s) 0 0 var(--r-s);
+}
+
+button.fx-power:hover {
+  background: var(--raised);
+}
+
+button.fx-power:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: -2px;
+}
+
+.fx-top .fx-head {
+  flex: 1;
+  min-width: 0;
+  padding-left: 2px;
+  border-radius: 0 var(--r-s) var(--r-s) 0;
+}
+
+.fx-chev {
+  flex: none;
+  color: var(--ink-3);
+  transform: rotate(-90deg);
+  transition: transform 0.2s var(--ease-out);
+}
+
+.fx-card.open .fx-chev {
+  transform: none;
 }
 
 .fx-led {
@@ -3859,13 +3896,6 @@ button.fx-head:focus-visible {
 
 .fx-sub {
   font-size: 12px;
-  color: var(--ink-3);
-}
-
-.fx-hint {
-  margin: 4px 2px 0;
-  font-size: 12px;
-  line-height: 1.5;
   color: var(--ink-3);
 }
 

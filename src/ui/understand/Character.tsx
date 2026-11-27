@@ -4,7 +4,7 @@ import { cls } from '../hooks';
 import { MasteringExtras } from './FileEvidence';
 
 /**
- * "Karakter rekaman": what the mastering numbers mean, in a few plain
+ * The recording's character (in "Rekaman"): what the mastering numbers mean, in a few plain
  * sentences. Each sentence also shows the number behind it, and the numbers
  * that have no sentence follow as a small grid.
  */

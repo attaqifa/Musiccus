@@ -234,9 +234,9 @@ const GUIDE: Record<Mode, { name: string; lede: string; parts: [string, string][
     lede: 'Atur rasa suara tanpa merusak aslinya. Mulai dari preset; buka Rack kalau ingin mengatur sendiri.',
     parts: [
       ['Pilih rasa', 'Satu klik, langsung terdengar. Setiap preset mulai dari suara asli.'],
-      ['Rack', 'EQ, kompresor, ruang, dan modul lainnya. Klik nama modul untuk menyalakannya; lampunya menyala saat modul itu sedang mengubah suara.'],
+      ['Rack', 'EQ, kompresor, ruang, dan modul lainnya, terlipat sampai Anda membukanya. Klik nama modul untuk menyalakan dan membuka pengaturannya, klik lampunya untuk mematikan.'],
       ['Knob', 'Seret naik atau turun untuk mengubah, klik ganda untuk kembali ke nilai awal.'],
-      ['Dengar asli', 'Bandingkan dengan suara asli kapan saja. Volumenya disamakan supaya perbandingannya adil.'],
+      ['Dengar asli', 'Tombol Asli di bar pemutar memutar suara asli dengan volume yang disamakan, supaya perbandingannya adil. Klik untuk berganti, atau tahan sesaat.'],
     ],
     keys: ['B', 'A'],
   },

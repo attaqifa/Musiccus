@@ -89,24 +89,28 @@ export function UnderstandPanel() {
         >
           <HarmonyWheel analysis={analysis} />
         </Section>
-        <Section id="u-river" title="Sungai nada" note="Nada yang dipakai dari waktu ke waktu; makin terang makin sering. Kanan garis putih belum terdengar.">
+        <Section id="u-river" title="Sungai nada" closed note="Nada yang dipakai dari waktu ke waktu; makin terang makin sering. Kanan garis putih belum terdengar.">
           <NoteRiver analysis={analysis} />
         </Section>
-        <Section id="u-character" title="Karakter rekaman" note="Cara lagu ini direkam dan dimaster. Perkiraan dari analisis seluruh lagu.">
-          <CharacterCard analysis={analysis} />
-        </Section>
-        {narrow ? (
-          <Section id="u-file" title="File dan jalur suara">
+        {/*
+         * How it was recorded and whether the file is what it says, in one place.
+         * On a narrow window the top bar has no room for the format pill, so the
+         * file's own facts lead here and the verdict is not repeated.
+         */}
+        <Section
+          id="u-record"
+          title="Rekaman"
+          closed
+          note="Cara lagu ini direkam dan dimaster, dan apakah filenya sesuai dengan labelnya. Perkiraan dari analisis seluruh lagu."
+        >
+          {narrow && (
             <div className="file-info">
               <FileInfo />
             </div>
-            <FileEvidence analysis={analysis} trackId={nowId} compact />
-          </Section>
-        ) : (
-          <Section id="u-file" title="Keaslian file" note="Bukti di balik penilaian kualitas file: spektrum rata-rata dan spektrogram seluruh lagu.">
-            <FileEvidence analysis={analysis} trackId={nowId} />
-          </Section>
-        )}
+          )}
+          <CharacterCard analysis={analysis} />
+          <FileEvidence analysis={analysis} trackId={nowId} compact={narrow} />
+        </Section>
         <p className="analysis-foot">
           Dianalisis dalam {(analysis.elapsedMs / 1000).toFixed(1).replace('.', ',')} detik. Akor dan struktur adalah perkiraan algoritma.
         </p>

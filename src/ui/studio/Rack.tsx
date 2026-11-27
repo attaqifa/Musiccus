@@ -1,3 +1,4 @@
+import { ChevronDown } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
 import { useAnalysis } from '../../analysis/manager';
 import { keyName } from '../../analysis/theory';
@@ -121,9 +122,15 @@ function Seg<T extends string>({ value, options, onChange, label, disabled }: {
   );
 }
 
+/** Modules the listener opened, kept while the app runs so switching modes does not fold them. */
+const opened = new Set<string>();
+
 /**
- * One module of the rack. Closed while it is off, so the rack reads as a
- * short list; the lamp turns amber once the module actually changes the sound.
+ * One module of the rack. Being on and being open are separate: a preset can
+ * switch a module on, but only the listener opens its controls. Off, a module
+ * is just its name, and clicking it switches it on and opens it. On, the lamp
+ * is its power switch and the name folds the controls; the lamp turns amber
+ * once the module actually changes the sound.
  */
 function Card({ title, on, active, onToggle, summary, off, children }: {
   title: string;
@@ -136,24 +143,59 @@ function Card({ title, on, active, onToggle, summary, off, children }: {
   off: string;
   children: ReactNode;
 }) {
-  const head = (
-    <>
-      <span className={cls('fx-led', on && 'on', active && 'live')} aria-hidden="true" />
-      <h4>{title}</h4>
-      {on && <span className="fx-sum">{summary}</span>}
-    </>
-  );
-  // Off, a module is just its name in a two-column grid; what it does is in the tooltip.
-  return (
-    <section className={cls('fx-card', on && 'on', !onToggle && 'fixed')}>
-      {onToggle ? (
-        <button className="fx-head" aria-pressed={on} onClick={onToggle} data-tip={on ? `Matikan ${title}` : `${off}. Klik untuk menyalakan.`}>
-          {head}
+  const [open, setOpenState] = useState(() => opened.has(title));
+  const setOpen = (v: boolean) => {
+    if (v) opened.add(title);
+    else opened.delete(title);
+    setOpenState(v);
+  };
+  const led = <span className={cls('fx-led', on && 'on', active && 'live')} aria-hidden="true" />;
+
+  // Off: one quiet name in the two-column grid; what it does is in the tooltip.
+  if (!on && onToggle) {
+    return (
+      <section className="fx-card">
+        <button
+          className="fx-head"
+          onClick={() => {
+            onToggle();
+            setOpen(true);
+          }}
+          data-tip={`${off}. Klik untuk menyalakan.`}
+        >
+          {led}
+          <h4>{title}</h4>
         </button>
-      ) : (
-        <div className="fx-head static">{head}</div>
-      )}
-      {on && <div className="fx-body">{children}</div>}
+      </section>
+    );
+  }
+
+  return (
+    <section className={cls('fx-card on', open && 'open', !onToggle && 'fixed')}>
+      <div className="fx-top">
+        {onToggle ? (
+          <button
+            className="fx-power"
+            aria-pressed="true"
+            aria-label={`${title} menyala`}
+            onClick={() => {
+              onToggle();
+              setOpen(false);
+            }}
+            data-tip={`Matikan ${title}`}
+          >
+            {led}
+          </button>
+        ) : (
+          <span className="fx-power static">{led}</span>
+        )}
+        <button className="fx-head" aria-expanded={open} onClick={() => setOpen(!open)}>
+          <h4>{title}</h4>
+          <span className="fx-sum">{summary}</span>
+          <ChevronDown className="fx-chev" size={14} aria-hidden="true" />
+        </button>
+      </div>
+      {open && <div className="fx-body">{children}</div>}
     </section>
   );
 }
@@ -527,7 +569,7 @@ function SpaceCard({ s }: { s: StudioState }) {
 function OutputCard({ s }: { s: StudioState }) {
   const o = s.output;
   return (
-    <Card title="Output" on active={Math.abs(o.gain) > 0.01} summary={o.gain ? `${signed(o.gain)} dB` : '0 dB'} off="">
+    <Card title="Output" on active={Math.abs(o.gain) > 0.01} summary={`${o.gain ? `${signed(o.gain)} dB` : '0 dB'}${o.limiter ? ' · limiter' : ''}`} off="">
       <div className="fx-row">
         <K label="Gain" value={o.gain} min={-12} max={12} step={0.5} def={0} bipolar fmt={(v) => `${signed(v)} dB`} onChange={(gain) => setModule('output', { gain })} />
         <label className="fx-check" data-tip="Menahan puncak di −1 dBFS supaya racikan yang lebih keras tidak clipping.">
@@ -553,7 +595,6 @@ export function Rack() {
       <DelayCard s={s} />
       <SpaceCard s={s} />
       <OutputCard s={s} />
-      <p className="fx-hint">Seret knob naik atau turun (Shift untuk halus), atau scroll di atasnya. Klik ganda untuk kembali ke nilai awal.</p>
     </div>
   );
 }

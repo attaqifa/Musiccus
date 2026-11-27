@@ -328,7 +328,7 @@ interface Metric {
   note: string;
 }
 
-/** The mastering numbers that have no plain sentence in "Karakter rekaman". */
+/** The mastering numbers that have no plain sentence in the character card. */
 function extraMetrics(m: Mastering): Metric[] {
   return [
     { label: 'LRA', value: num(m.lra), unit: 'LU', tone: m.lra >= 6 ? 'good' : m.lra >= 3 ? 'ok' : 'warn', note: 'Jarak loudness bagian pelan dan bagian keras.' },

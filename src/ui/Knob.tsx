@@ -104,7 +104,7 @@ export function Knob({ value, min, max, onChange, label, format, defaultValue, s
       aria-valuemax={max}
       aria-valuenow={Math.round(value * 10) / 10}
       aria-valuetext={format(value)}
-      data-tip={disabled ? (hint ?? label) : `${hint ?? `${label}: ${format(value)}.`} Seret naik/turun (Shift untuk halus), klik ganda untuk reset.`}
+      data-tip={disabled ? (hint ?? label) : `${hint ?? `${label}: ${format(value)}.`} Seret naik/turun atau scroll (Shift untuk halus), klik ganda untuk reset.`}
       style={{ width: size, height: size }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
