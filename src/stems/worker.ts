@@ -44,6 +44,9 @@ let loading: Promise<Piece[]> | null = null;
 /** Last piece that reads each intermediate tensor, so GPU memory is freed early. */
 let lastUse = new Map<string, number>();
 
+/** A problem already worded for the listener; anything else gets a plain message. */
+class StemError extends Error {}
+
 async function fetchCached(url: string, onBytes: (n: number) => void): Promise<ArrayBuffer> {
   const cache = await caches.open(MODEL_CACHE);
   const hit = await cache.match(url);
@@ -53,7 +56,7 @@ async function fetchCached(url: string, onBytes: (n: number) => void): Promise<A
     return buf;
   }
   const res = await fetch(url);
-  if (!res.ok || !res.body) throw new Error(`Model tidak bisa diunduh (HTTP ${res.status}).`);
+  if (!res.ok || !res.body) throw new StemError(`Model AI tidak bisa diunduh (server menjawab ${res.status}). Coba lagi nanti, atau pakai mode Instan.`);
   const reader = res.body.getReader();
   const chunks: Uint8Array[] = [];
   let size = 0;
@@ -78,7 +81,7 @@ async function loadModel(report: (stage: string, p: number) => void): Promise<Pi
   if (pieces) return pieces;
   if (loading) return loading;
   loading = (async () => {
-    if (!('gpu' in navigator)) throw new Error('Browser ini belum mendukung WebGPU. Pakai mode Cepat, atau buka Musiccus di Chrome atau Edge terbaru.');
+    if (!('gpu' in navigator)) throw new StemError('Browser ini belum mendukung WebGPU. Pakai mode Instan, atau buka Musiccus di Chrome atau Edge terbaru.');
     const manifestBuf = await fetchCached(`${MODEL_BASE}htdemucs_split_manifest.json`, () => undefined);
     const manifest = JSON.parse(new TextDecoder().decode(manifestBuf)) as { pieces: PieceSpec[] };
     let loaded = 0;
@@ -253,6 +256,17 @@ self.onmessage = async (e: MessageEvent<SeparateRequest>) => {
   } catch (err) {
     // The app only shows the message; the console keeps the stack for diagnosis.
     console.error('Musiccus: stem separation failed', err);
-    post({ type: 'error', id: req.id, message: err instanceof Error ? err.message : String(err) });
+    post({ type: 'error', id: req.id, message: stemErrorText(err) });
   }
 };
+
+function stemErrorText(err: unknown): string {
+  if (err instanceof StemError) return err.message;
+  if (err instanceof DOMException && err.name === 'QuotaExceededError') {
+    return 'Penyimpanan browser penuh, jadi model AI tidak bisa disimpan. Kosongkan cache stem di Pengaturan, atau pakai mode Instan.';
+  }
+  if (err instanceof TypeError && /fetch|network/i.test(err.message)) {
+    return 'Model AI tidak bisa diunduh. Periksa koneksi internet, lalu coba lagi.';
+  }
+  return 'Pemisahan berhenti di tengah jalan. Coba lagi; kalau tetap gagal, pakai mode Instan.';
+}

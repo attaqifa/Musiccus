@@ -999,8 +999,9 @@ body.idle .stage-exit {
   color: var(--signal);
 }
 
-.lib-track.unsupported {
-  opacity: 0.45;
+/* A song that cannot play yet reads quieter, while its name stays legible. */
+.lib-track.unsupported .lt-title {
+  color: var(--ink-3);
 }
 
 .lt-no {
@@ -1771,6 +1772,14 @@ body.idle .stage-exit {
   z-index: 30;
 }
 
+/* Opened boxes take focus so the keyboard starts inside them; the box itself is not a control. */
+.q-pop:focus,
+.drawer:focus,
+.modal:focus,
+.sonic-map:focus {
+  outline: none;
+}
+
 /* Hangs from the transport's right edge (the nearest positioned box), above it. */
 .q-pop {
   position: absolute;
@@ -1919,8 +1928,8 @@ button.q-row:hover {
   background: var(--signal-dim);
 }
 
-.q-row.unsupported {
-  opacity: 0.45;
+.q-row.unsupported .q-title {
+  color: var(--ink-3);
 }
 
 .q-title {
@@ -2714,6 +2723,17 @@ button.q-row:hover {
 .stage-mode .music-hud {
   opacity: 0;
   pointer-events: none;
+}
+
+.analysis-failed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.analysis-failed .empty-note {
+  flex: 1 1 220px;
 }
 
 .analysis-progress {
@@ -3654,17 +3674,6 @@ button.q-row:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-}
-
-.btn.compare-btn {
-  touch-action: none;
-  user-select: none;
-}
-
-.btn.compare-btn.on {
-  border-color: var(--signal-line);
-  background: var(--signal-dim);
-  color: var(--ink);
 }
 
 .mix-form {
@@ -4980,13 +4989,15 @@ button.fx-power:focus-visible {
   transition: width 0.3s ease;
 }
 
-.strips.pending {
+/* Before separation the meters have nothing to show and the knobs wait; the names stay readable. */
+.strips.pending .strip-meter,
+.strips.pending .knob {
   opacity: 0.45;
   transition: opacity 0.3s var(--ease-out);
 }
 
-.strips.pending:hover,
-.strips.pending:focus-within {
+.strips.pending:hover .knob,
+.strips.pending:focus-within .knob {
   opacity: 0.8;
 }
 
@@ -5136,7 +5147,8 @@ button.fx-power:focus-visible {
 }
 
 /* The knob refuses the drag itself, so its explanation can still be hovered. */
-.strip-knob.disabled {
+/* Pan handed to the 3D stage: the knob steps back, its "3D" label stays legible. */
+.strip-knob.disabled .knob {
   opacity: 0.35;
 }
 

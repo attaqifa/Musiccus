@@ -1,6 +1,6 @@
 import { requestAnalysis } from '../analysis/manager';
 import { engine } from '../audio/engine';
-import { decodeFile, renderDemo, type Decoded } from '../audio/decode';
+import { decodeFile, DecodeError, renderDemo, type Decoded } from '../audio/decode';
 import { computePeaks } from '../audio/peaks';
 import { readMeta, type TrackMeta } from '../library/metadata';
 import { filesFromList, NEEDS_WASM, walkDirectory, type FoundFile } from '../library/scan';
@@ -12,10 +12,32 @@ import { getState, setSettings, setUi, toast, usePlayer, type RepeatMode, type S
 
 /* ------------------------------------------------------------ Library -- */
 
+/** A problem already worded for the listener. */
+class TrackError extends Error {}
+
 export async function getFile(t: Track): Promise<File> {
   if (t.file) return t.file;
   if (t.handle) return t.handle.getFile();
-  throw new Error('File tidak tersedia.');
+  throw new TrackError('File lagu ini tidak tersedia lagi. Buka atau seret lagi file atau foldernya.');
+}
+
+/**
+ * Why a song did not play, in words the listener can act on. The browser's
+ * own messages are English and technical, so they stay in the console.
+ */
+function playError(e: unknown): string {
+  if (e instanceof DecodeError || e instanceof TrackError) return e.message;
+  switch (e instanceof DOMException ? e.name : '') {
+    case 'NotFoundError':
+      return 'File lagu ini tidak ditemukan; mungkin sudah dipindah atau dihapus. Buka foldernya lagi untuk memperbarui koleksi.';
+    case 'NotAllowedError':
+    case 'SecurityError':
+      return 'Musiccus perlu izin lagi untuk membaca folder ini. Buka foldernya lagi untuk memberi izin.';
+    case 'NotReadableError':
+      return 'File ini tidak bisa dibaca; mungkin sedang dipakai aplikasi lain, atau drive-nya terlepas.';
+    default:
+      return 'Lagu ini tidak bisa diputar.';
+  }
 }
 
 function toTracks(found: FoundFile[], existing: Record<string, Track>): Track[] {
@@ -258,6 +280,14 @@ async function decodeTrack(t: Track): Promise<Decoded> {
 /** The decoded buffer of a track that is playing or queued, if still in memory. */
 export const getDecoded = (id: string | undefined) => (id ? decoded.get(id) : undefined);
 
+/** Runs the analysis of the playing song again, after it failed. */
+export function retryAnalysis() {
+  const { now, tracks } = getState();
+  const t = now ? tracks[now.trackId] : undefined;
+  const d = getDecoded(t?.id);
+  if (t && d) void requestAnalysis(t, d.buffer, d.resampled);
+}
+
 /** Keeps memory bounded: only the playing and the queued buffer stay decoded. */
 function pruneDecoded(keep: (string | undefined)[]) {
   for (const id of decoded.keys()) if (!keep.includes(id)) decoded.delete(id);
@@ -441,7 +471,7 @@ async function playPick(p: Pick, offset = 0) {
   usePlayer.setState({ status: 'loading' });
   const t = getState().tracks[p.id];
   try {
-    if (!t) throw new Error('Lagu ini sudah tidak ada di library.');
+    if (!t) throw new TrackError('Lagu ini sudah tidak ada di koleksi.');
     const d = await decodeTrack(t);
     if (req !== playRequest) return;
     const rg = rgFor(t);
@@ -456,7 +486,7 @@ async function playPick(p: Pick, offset = 0) {
     if (req !== playRequest) return;
     // The toast shows only the message; the console keeps the stack for diagnosis.
     console.error('Musiccus: playback failed', e);
-    toast(e instanceof Error ? e.message : 'Lagu ini tidak bisa diputar.', 'error');
+    toast(playError(e), 'error');
     usePlayer.setState({ status: getState().now ? 'paused' : 'idle' });
     const after = pickNext(false);
     if (after && after.id !== p.id && ++failStreak < Math.min(getState().queue.length + 1, 50)) void playPick(after);

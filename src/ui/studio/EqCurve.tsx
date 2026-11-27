@@ -3,6 +3,7 @@ import type { Authenticity } from '../../analysis/types';
 import { hub } from '../../audio/hub';
 import { formatHz } from '../../lib/format';
 import type { EqBand } from '../../studio/types';
+import { useDragPointer } from '../hooks';
 
 const F_MIN = 20;
 const F_MAX = 20000;
@@ -70,6 +71,7 @@ export function EqCurve({
   const wrap = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(300);
   const drag = useRef<number | null>(null);
+  const grip = useDragPointer();
 
   useLayoutEffect(() => {
     const el = wrap.current;
@@ -136,6 +138,7 @@ export function EqCurve({
   };
 
   const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
+    if (grip.active || e.button !== 0) return;
     const { x, y } = locate(e);
     let best = -1;
     let bestD = Infinity;
@@ -157,16 +160,15 @@ export function EqCurve({
       return;
     }
     onSelect(best);
-    drag.current = best;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    if (grip.start(e)) drag.current = best;
   };
   const onPointerMove = (e: PointerEvent<SVGSVGElement>) => {
-    if (drag.current === null) return;
+    if (drag.current === null || !grip.owns(e)) return;
     const { x, y } = locate(e);
     move(drag.current, x, y);
   };
-  const onPointerUp = () => {
-    drag.current = null;
+  const onPointerUp = (e: PointerEvent<SVGSVGElement>) => {
+    if (grip.end(e)) drag.current = null;
   };
 
   // Scroll changes the Q of the selected band (non-passive, so the panel stays put).
@@ -214,6 +216,7 @@ export function EqCurve({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
+        onLostPointerCapture={onPointerUp}
         role="group"
         aria-label="Kurva EQ: seret titik untuk mengatur frekuensi dan gain, scroll untuk Q"
       >

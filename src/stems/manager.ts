@@ -227,7 +227,7 @@ function ensureWorker(): Worker {
     if (msg.type === 'done') finish(job, msg.stems, msg.levels, msg.backend, msg.elapsedMs, msg.raw);
     else {
       setStemStatus(job.trackId, { state: 'error', stage: 'Gagal', progress: 0, engine: job.engine, error: msg.message });
-      toast(`Pemisahan stem gagal: ${msg.message}`, 'error', 8000);
+      toast(msg.message, 'error', 8000);
       if (job.engine === 'ai') {
         void refreshModelStatus();
         // A failed GPU run can leave the device unusable: start the next try in a fresh worker.
@@ -239,9 +239,10 @@ function ensureWorker(): Worker {
     pump();
   };
   worker.onerror = (e) => {
+    console.error('Musiccus: stem worker stopped', e.message);
     if (running) {
       const { job } = running;
-      setStemStatus(job.trackId, { state: 'error', stage: 'Gagal', progress: 0, engine: job.engine, error: e.message || 'Worker berhenti.' });
+      setStemStatus(job.trackId, { state: 'error', stage: 'Gagal', progress: 0, engine: job.engine, error: 'Pemisahan berhenti di tengah jalan. Coba lagi; kalau tetap gagal, pakai mode Instan.' });
       running = null;
     }
     worker?.terminate();

@@ -10,7 +10,7 @@ import { usePlayer } from '../../store/player';
 import { useHubCanvas } from '../hooks';
 import { C, keyCss, MONO, SANS } from '../palette';
 import { sectionColor } from './MusicSummary';
-import { AnalysisProgress } from './UnderstandPanel';
+import { AnalysisFailed, AnalysisProgress } from './UnderstandPanel';
 
 const SEC_H = 30;
 const CHORD_Y = 34;
@@ -192,7 +192,7 @@ export function SongMap() {
       {analysis ? (
         <MapCanvas analysis={analysis} />
       ) : status?.state === 'error' ? (
-        <p className="empty-note">Peta lagu tidak tersedia: {status.error}</p>
+        <AnalysisFailed short />
       ) : (
         <AnalysisProgress stage={status?.stage ?? 'Antre'} progress={status?.progress ?? 0} />
       )}

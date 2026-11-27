@@ -3,7 +3,7 @@ import { engine } from '../audio/engine';
 import { formatTime } from '../lib/format';
 import { seek, seekBy } from '../store/controller';
 import { usePlayer } from '../store/player';
-import { useHubCanvas } from './hooks';
+import { useDragPointer, useHubCanvas } from './hooks';
 import { C, signalA } from './palette';
 
 /** Waveform overview doubling as the seek bar. */
@@ -14,7 +14,7 @@ export function WaveSeek() {
   peaksRef.current = peaks;
   const hoverX = useRef<number | null>(null);
   const [hover, setHover] = useState<{ x: number; t: number } | null>(null);
-  const dragging = useRef(false);
+  const grip = useDragPointer();
   const posRef = useRef(0);
 
   const canvas = useHubCanvas((ctx, w, h) => {
@@ -62,25 +62,27 @@ export function WaveSeek() {
     return { x, t: (x / r.width) * duration };
   };
   const onDown = (e: PointerEvent<HTMLDivElement>) => {
-    if (!duration) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragging.current = true;
+    if (duration) grip.start(e);
   };
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (!duration) return;
+    if (!duration || (grip.active && !grip.owns(e))) return;
     const h = timeAt(e);
     hoverX.current = h.x;
     setHover(h);
   };
   const onUp = (e: PointerEvent<HTMLDivElement>) => {
-    if (!dragging.current) return;
-    dragging.current = false;
-    seek(timeAt(e).t);
+    if (grip.end(e)) seek(timeAt(e).t);
   };
-  const onLeave = () => {
-    if (dragging.current) return;
+  const clearHover = () => {
     hoverX.current = null;
     setHover(null);
+  };
+  // A cancelled gesture (the page scrolled instead) does not seek.
+  const onCancel = (e: PointerEvent<HTMLDivElement>) => {
+    if (grip.end(e)) clearHover();
+  };
+  const onLeave = () => {
+    if (!grip.active) clearHover();
   };
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'ArrowRight') seekBy(e.shiftKey ? 30 : 5);
@@ -103,6 +105,8 @@ export function WaveSeek() {
       onPointerDown={onDown}
       onPointerMove={onMove}
       onPointerUp={onUp}
+      onPointerCancel={onCancel}
+      onLostPointerCapture={onCancel}
       onPointerLeave={onLeave}
       onKeyDown={onKey}
     >

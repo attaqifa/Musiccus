@@ -572,7 +572,7 @@ function OutputCard({ s }: { s: StudioState }) {
     <Card title="Output" on active={Math.abs(o.gain) > 0.01} summary={`${o.gain ? `${signed(o.gain)} dB` : '0 dB'}${o.limiter ? ' · limiter' : ''}`} off="">
       <div className="fx-row">
         <K label="Gain" value={o.gain} min={-12} max={12} step={0.5} def={0} bipolar fmt={(v) => `${signed(v)} dB`} onChange={(gain) => setModule('output', { gain })} />
-        <label className="fx-check" data-tip="Menahan puncak di −1 dBFS supaya racikan yang lebih keras tidak clipping.">
+        <label className="fx-check" data-tip="Meredam puncak di atas −1 dBFS supaya racikan yang lebih keras tidak pecah. Ini pengaman, bukan limiter mastering: puncak yang sangat singkat masih bisa lolos.">
           <input type="checkbox" checked={o.limiter} onChange={(e) => setModule('output', { limiter: e.target.checked })} />
           Limiter pengaman
         </label>

@@ -40,6 +40,7 @@ export function CompareButton({ className, short }: { className?: string; short?
       }}
       onPointerUp={release}
       onPointerCancel={release}
+      onLostPointerCapture={release}
       // Keyboard activation has no pointer events (detail is 0).
       onClick={(e) => e.detail === 0 && setCompare(!compare)}
     >

@@ -1,6 +1,8 @@
+import { RotateCcw } from 'lucide-react';
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { useAnalysis } from '../../analysis/manager';
 import { useLive } from '../../live/store';
+import { retryAnalysis } from '../../store/controller';
 import { usePlayer } from '../../store/player';
 import { FileInfo } from '../FileInfo';
 import { Section } from '../Section';
@@ -21,6 +23,23 @@ export function AnalysisProgress({ stage, progress }: { stage: string; progress:
       <div className="bar">
         <i style={{ width: `${Math.max(3, progress * 100)}%` }} />
       </div>
+    </div>
+  );
+}
+
+/** The analysis failed: the song still plays, and one click runs it again. */
+export function AnalysisFailed({ short }: { short?: boolean }) {
+  return (
+    <div className="analysis-failed">
+      <p className="empty-note">
+        {short
+          ? 'Analisis lagu ini gagal, jadi petanya belum ada.'
+          : 'Analisis lagu ini gagal, jadi kunci, akor, dan bagiannya belum terbaca. Lagunya tetap bisa diputar dan diracik.'}
+      </p>
+      <button className="btn small" onClick={retryAnalysis}>
+        <RotateCcw size={14} aria-hidden="true" />
+        Coba lagi
+      </button>
     </div>
   );
 }
@@ -63,7 +82,9 @@ export function UnderstandPanel() {
   } else if (!analysis) {
     body =
       status?.state === 'error' ? (
-        <p className="empty-note pad">Analisis gagal: {status.error}</p>
+        <div className="pad">
+          <AnalysisFailed />
+        </div>
       ) : (
         <div className="pad">
           <AnalysisProgress stage={status?.stage ?? 'Antre'} progress={status?.progress ?? 0} />

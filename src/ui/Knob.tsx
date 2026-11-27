@@ -1,4 +1,5 @@
 import { useEffect, useRef, type KeyboardEvent, type PointerEvent } from 'react';
+import { useDragPointer } from './hooks';
 
 interface KnobProps {
   value: number;
@@ -37,6 +38,7 @@ function arc(cx: number, cy: number, r: number, a0: number, a1: number) {
  */
 export function Knob({ value, min, max, onChange, label, format, defaultValue, step = 0.5, size = 52, bipolar, disabled, hint }: KnobProps) {
   const drag = useRef<{ y: number; v: number } | null>(null);
+  const grip = useDragPointer();
   const el = useRef<HTMLDivElement>(null);
   const norm = Math.min(1, Math.max(0, (value - min) / (max - min)));
   const angle = START + norm * SWEEP;
@@ -64,18 +66,17 @@ export function Knob({ value, min, max, onChange, label, format, defaultValue, s
   }, []);
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    if (disabled) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    if (disabled || !grip.start(e)) return;
     drag.current = { y: e.clientY, v: value };
   };
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (!drag.current) return;
+    if (!drag.current || !grip.owns(e)) return;
     const range = max - min;
     const sens = e.shiftKey ? 900 : 220;
     set(drag.current.v + ((drag.current.y - e.clientY) / sens) * range);
   };
-  const onPointerUp = () => {
-    drag.current = null;
+  const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    if (grip.end(e)) drag.current = null;
   };
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
@@ -110,6 +111,7 @@ export function Knob({ value, min, max, onChange, label, format, defaultValue, s
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
+      onLostPointerCapture={onPointerUp}
       onKeyDown={onKeyDown}
       onDoubleClick={() => !disabled && defaultValue !== undefined && set(defaultValue)}
     >

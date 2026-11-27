@@ -5,7 +5,7 @@ import { attachLrc } from '../lyrics/lyrics';
 import { addFound, playQueue, setRgMode } from '../store/controller';
 import { getState, setSettings, setUi, usePlayer, type ColorSource, type Mode, type QualityChoice, type Settings } from '../store/player';
 import { HeadphonePicker } from './HeadphonePicker';
-import { cls } from './hooks';
+import { cls, useDialogFocus } from './hooks';
 import { GpuReadout, StemStorage } from './SettingsExtra';
 
 function Segmented<T extends string>({ value, options, onChange, label }: {
@@ -40,10 +40,11 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 export function SettingsDrawer() {
   const open = usePlayer((s) => s.ui.settings);
   const s = usePlayer((st) => st.settings);
+  const box = useDialogFocus<HTMLElement>({ open });
   if (!open) return null;
   const set = (p: Partial<Settings>) => setSettings(p);
   return (
-    <aside className="drawer panel" aria-label="Pengaturan">
+    <aside ref={box} tabIndex={-1} className="drawer panel" aria-label="Pengaturan">
       <div className="drawer-head">
         <h2>Pengaturan</h2>
         <button className="icon-btn" onClick={() => setUi({ settings: false })} aria-label="Tutup pengaturan">
@@ -190,9 +191,10 @@ const SHORTCUTS: [string, string][] = [
 ];
 
 function Modal({ onClose, label, children, className }: { onClose: () => void; label: string; children: ReactNode; className?: string }) {
+  const box = useDialogFocus<HTMLDivElement>({ trap: true });
   return (
     <div className="modal-scrim" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={cls('modal panel', className)} role="dialog" aria-modal="true" aria-label={label}>
+      <div ref={box} tabIndex={-1} className={cls('modal panel', className)} role="dialog" aria-modal="true" aria-label={label}>
         <button className="icon-btn modal-close" onClick={onClose} aria-label="Tutup">
           <X size={17} />
         </button>

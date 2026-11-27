@@ -61,6 +61,8 @@ function ensureWorker(): Worker {
         setAnalysisStatus(id, { state: 'done', stage: 'Selesai', progress: 1 });
       });
     } else {
+      // The panel says it failed and offers a retry; the reason is for diagnosis.
+      console.error('Musiccus: analysis failed', msg.message);
       setAnalysisStatus(job.track.id, { state: 'error', stage: 'Gagal', progress: 0, error: msg.message });
     }
     inFlight.delete(job.track.id);

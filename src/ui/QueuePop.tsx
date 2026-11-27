@@ -4,7 +4,7 @@ import { songLabel } from '../library/display';
 import { clearUpNext, cycleRepeat, playQueueAt, playUpNext, removeUpNext, setShuffle } from '../store/controller';
 import { setUi, usePlayer, type RepeatMode, type SleepTimer, type Track } from '../store/player';
 import { setSleep, SLEEP_CHOICES } from '../store/sleep';
-import { cls } from './hooks';
+import { cls, useDialogFocus } from './hooks';
 
 /** How many coming songs the popover lists; the rest is a count. */
 const SHOW = 30;
@@ -107,6 +107,7 @@ function QueuePop() {
   const upNext = usePlayer((s) => s.upNext);
   const shuffle = usePlayer((s) => s.settings.shuffle);
   const repeat = usePlayer((s) => s.settings.repeat);
+  const box = useDialogFocus<HTMLDivElement>();
 
   const coming: number[] = [];
   for (let i = queueIndex + 1; i < queue.length && coming.length < SHOW; i++) coming.push(i);
@@ -117,7 +118,7 @@ function QueuePop() {
   const nowTrack = nowId ? tracks[nowId] : undefined;
 
   return (
-    <div className="q-pop panel" role="dialog" aria-label="Antrean">
+    <div ref={box} tabIndex={-1} className="q-pop panel" role="dialog" aria-label="Antrean">
       <div className="q-head">
         <h2>Antrean</h2>
         <div className="q-modes">

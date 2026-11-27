@@ -37,7 +37,7 @@ export async function decodeFile(
     buffer = await ctx.decodeAudioData(data);
   } catch {
     throw new DecodeError(
-      `Browser tidak bisa men-decode ${ext.toUpperCase()} ini. Dukungan decoder WASM (ALAC, APE, WavPack, DSD) menyusul di fase berikutnya.`,
+      `File ${ext.toUpperCase()} ini tidak bisa dibaca browser. Filenya mungkin rusak, atau isinya memakai format yang belum didukung.`,
     );
   }
   return {
@@ -105,7 +105,7 @@ export function decodeAiff(ab: ArrayBuffer): AudioBuffer {
     }
     p = body + size + (size & 1);
   }
-  if (!channels || !rate || dataStart < 0) throw new DecodeError('Header AIFF tidak lengkap.');
+  if (!channels || !rate || dataStart < 0) throw new DecodeError('File AIFF ini tidak lengkap atau rusak.');
 
   const comp = compression.toLowerCase();
   const isFloat = comp === 'fl32' || comp === 'fl64';

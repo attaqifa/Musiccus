@@ -254,10 +254,20 @@ compactQuery?.addEventListener('change', (e) => {
 });
 
 let toastId = 0;
+const toastTimers = new Map<number, number>();
 export function toast(text: string, kind: Toast['kind'] = 'info', ms = 5200) {
-  const id = ++toastId;
-  usePlayer.setState((s) => ({ toasts: [...s.toasts.slice(-3), { id, kind, text }] }));
-  window.setTimeout(() => usePlayer.setState((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), ms);
+  // The same message again (a run of songs failing alike) keeps the one shown up longer instead of stacking.
+  const same = getState().toasts.find((t) => t.text === text && t.kind === kind);
+  const id = same?.id ?? ++toastId;
+  if (!same) usePlayer.setState((s) => ({ toasts: [...s.toasts.slice(-3), { id, kind, text }] }));
+  window.clearTimeout(toastTimers.get(id));
+  toastTimers.set(
+    id,
+    window.setTimeout(() => {
+      toastTimers.delete(id);
+      usePlayer.setState((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) }));
+    }, ms),
+  );
 }
 
 export const currentTrack = (s: PlayerState = getState()): Track | undefined =>

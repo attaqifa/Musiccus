@@ -16,6 +16,8 @@ export function useShortcuts() {
       if (e.ctrlKey || e.metaKey || e.altKey || isTyping(e.target)) return;
       const s = getState();
       const overlay = s.ui.settings || s.ui.calibration || s.ui.help;
+      // A modal keeps the keys to itself: behind it nothing plays, seeks or switches; Esc (or ? for the guide) closes it.
+      if ((s.ui.calibration || s.ui.help) && e.key !== 'Escape' && !(s.ui.help && e.key === '?')) return;
       switch (e.key) {
         case ' ':
           if (e.target instanceof HTMLButtonElement) return;

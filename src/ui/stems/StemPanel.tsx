@@ -7,7 +7,7 @@ import { activePreset, applyPreset, PRESETS, resetStage, setPosition, setStage, 
 import { STEM_COLOR, STEM_LABEL, STEMS, type SeparationEngine, type StemId } from '../../stems/types';
 import { useLive } from '../../live/store';
 import { usePlayer } from '../../store/player';
-import { cls, useHub, useHubCanvas } from '../hooks';
+import { cls, useDragPointer, useHub, useHubCanvas } from '../hooks';
 import { Section } from '../Section';
 import { Knob } from '../Knob';
 import { C, MONO } from '../palette';
@@ -143,7 +143,7 @@ function Strip({ id, k, trackId, mix }: { id: StemId; k: number; trackId: string
       </div>
       <div className={cls('strip-knob', mix.stage && 'disabled')} data-tip={mix.stage ? 'Saat panggung 3D aktif, posisi diatur di panggung.' : undefined}>
         <Knob value={st.pan} min={-1} max={1} step={0.05} defaultValue={0} label={`Pan ${STEM_LABEL[id]}`} format={panText} onChange={(v) => setStrip(id, { pan: v })} size={32} disabled={mix.stage} hint={mix.stage ? 'Saat panggung 3D aktif, posisi diatur di panggung.' : undefined} />
-        <span>{Math.abs(st.pan) < 0.01 ? 'C' : `${st.pan < 0 ? 'L' : 'R'}${Math.round(Math.abs(st.pan) * 100)}`}</span>
+        <span>{mix.stage ? '3D' : Math.abs(st.pan) < 0.01 ? 'C' : `${st.pan < 0 ? 'L' : 'R'}${Math.round(Math.abs(st.pan) * 100)}`}</span>
       </div>
       <button className={cls('ms', st.mute && 'on')} aria-pressed={st.mute} onClick={() => setStrip(id, { mute: !st.mute })} data-tip={`Mute ${STEM_LABEL[id]}`}>
         M
@@ -194,6 +194,7 @@ function StagePad() {
   const mix = useStems((s) => s.mix);
   const selected = useRef<StemId>('vocals');
   const drag = useRef<StemId | null>(null);
+  const grip = useDragPointer();
   const geom = useRef({ cx: 0, cy: 0, scale: 1 });
   const nowId = usePlayer((s) => s.now?.trackId);
 
@@ -302,17 +303,20 @@ function StagePad() {
     setPosition(id, { x: Math.round(x * k * 100) / 100, z: Math.round(z * k * 100) / 100 });
   };
   const onDown = (e: PointerEvent<HTMLCanvasElement>) => {
+    if (grip.active) return;
     const w = toWorld(e);
     const id = hit(w.x, w.z);
     if (!id) return;
     selected.current = id;
-    drag.current = id;
-    e.currentTarget.setPointerCapture(e.pointerId);
+    if (grip.start(e)) drag.current = id;
   };
   const onMove = (e: PointerEvent<HTMLCanvasElement>) => {
-    if (!drag.current) return;
+    if (!drag.current || !grip.owns(e)) return;
     const w = toWorld(e);
     move(drag.current, w.x, w.z);
+  };
+  const onEnd = (e: PointerEvent<HTMLCanvasElement>) => {
+    if (grip.end(e)) drag.current = null;
   };
   const onWheel = (e: WheelEvent<HTMLCanvasElement>) => {
     const w = toWorld(e);
@@ -354,8 +358,9 @@ function StagePad() {
         aria-label="Panggung 3D dilihat dari atas. Anda di tengah bawah, menghadap ke atas. Seret stem untuk memindahkannya; scroll untuk melebarkan. Keyboard: Tab memilih stem, panah memindahkan."
         onPointerDown={onDown}
         onPointerMove={onMove}
-        onPointerUp={() => (drag.current = null)}
-        onPointerCancel={() => (drag.current = null)}
+        onPointerUp={onEnd}
+        onPointerCancel={onEnd}
+        onLostPointerCapture={onEnd}
         onWheel={onWheel}
         onKeyDown={onKey}
       />

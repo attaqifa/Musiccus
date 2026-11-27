@@ -6,7 +6,7 @@ import type { Analysis, KeyInfo, Rgb } from '../analysis/types';
 import { analyseCollection, cancelCollection, loadCollectionCache, unanalysedCount, useCollection } from '../library/collection';
 import { playQueue } from '../store/controller';
 import { setUi, usePlayer } from '../store/player';
-import { cls, useHubCanvas } from './hooks';
+import { cls, useDialogFocus, useDragPointer, useHubCanvas } from './hooks';
 import { C, MONO, signalA } from './palette';
 
 type Layout = 'mood' | 'harmony';
@@ -153,6 +153,7 @@ function harmonicPath(start: Star, stars: Star[], length = 12): Star[] {
 }
 
 export function SonicMap() {
+  const box = useDialogFocus<HTMLElement>();
   const order = usePlayer((s) => s.order);
   const tracks = usePlayer((s) => s.tracks);
   const nowId = usePlayer((s) => s.now?.trackId);
@@ -175,6 +176,7 @@ export function SonicMap() {
 
   const view = useRef({ zoom: 1, x: 0, y: 0, mix: 0 });
   const drag = useRef<{ x: number; y: number; vx: number; vy: number; moved: boolean } | null>(null);
+  const grip = useDragPointer();
   const geom = useRef({ w: 1, h: 1 });
   const state = useRef({ stars, layout, selected, path, nowId, byId });
   state.current = { stars, layout, selected, path, nowId, byId };
@@ -310,12 +312,13 @@ export function SonicMap() {
     return [e.clientX - r.left, e.clientY - r.top] as const;
   };
   const onDown = (e: PointerEvent<HTMLCanvasElement>) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
+    if (!grip.start(e)) return;
     drag.current = { x: e.clientX, y: e.clientY, vx: view.current.x, vy: view.current.y, moved: false };
   };
   const onMove = (e: PointerEvent<HTMLCanvasElement>) => {
     const [mx, my] = local(e);
-    const d = drag.current;
+    if (grip.active && !grip.owns(e)) return;
+    const d = grip.active ? drag.current : null;
     if (d) {
       const [sx, sy] = scales(geom.current.w, geom.current.h);
       if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 4) d.moved = true;
@@ -330,12 +333,17 @@ export function SonicMap() {
     setHover(s ? { x: mx, y: my, star: s } : null);
   };
   const onUp = (e: PointerEvent<HTMLCanvasElement>) => {
+    if (!grip.end(e)) return;
     const d = drag.current;
     drag.current = null;
     if (d?.moved) return;
     const [mx, my] = local(e);
     const s = starAt(mx, my);
     setSelected(s?.id ?? null);
+  };
+  // A cancelled gesture neither pans further nor picks a song.
+  const onCancel = (e: PointerEvent<HTMLCanvasElement>) => {
+    if (grip.end(e)) drag.current = null;
   };
   const onWheel = (e: WheelEvent<HTMLCanvasElement>) => {
     const v = view.current;
@@ -348,7 +356,7 @@ export function SonicMap() {
   const playPath = () => path.length && void playQueue(path, 0, 0, { inOrder: true });
 
   return (
-    <section className="sonic-map panel" aria-label="Peta koleksi">
+    <section ref={box} tabIndex={-1} className="sonic-map panel" aria-label="Peta koleksi">
       <header className="sm-head">
         <div>
           <h2>Peta koleksi</h2>
@@ -403,6 +411,8 @@ export function SonicMap() {
             onPointerDown={onDown}
             onPointerMove={onMove}
             onPointerUp={onUp}
+            onPointerCancel={onCancel}
+            onLostPointerCapture={onCancel}
             onPointerLeave={() => setHover(null)}
             onWheel={onWheel}
           />

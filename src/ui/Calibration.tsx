@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { engine } from '../audio/engine';
 import { setAvOffset, togglePlay } from '../store/controller';
 import { getState, setUi, usePlayer } from '../store/player';
+import { useDialogFocus } from './hooks';
 
 const INTERVAL = 0.75;
 
@@ -18,6 +19,7 @@ export function CalibrationDialog() {
 }
 
 function CalibrationBody() {
+  const box = useDialogFocus<HTMLDivElement>({ trap: true });
   const [offset, setOffset] = useState(() => getState().settings.avOffsetMs);
   const offsetRef = useRef(offset);
   offsetRef.current = offset;
@@ -84,7 +86,7 @@ function CalibrationBody() {
 
   return (
     <div className="modal-scrim" onPointerDown={(e) => e.target === e.currentTarget && close()}>
-      <div className="modal panel calibration" role="dialog" aria-modal="true" aria-label="Kalibrasi sinkronisasi audio-visual">
+      <div ref={box} tabIndex={-1} className="modal panel calibration" role="dialog" aria-modal="true" aria-label="Kalibrasi sinkronisasi audio-visual">
         <button className="icon-btn modal-close" onClick={close} aria-label="Tutup">
           <X size={17} />
         </button>
