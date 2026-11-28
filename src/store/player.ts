@@ -254,6 +254,17 @@ export function setUi(patch: Partial<UiState>) {
 /** Closes the library and inspector drawers (small screens). */
 export const closeDrawers = () => setUi({ library: false, inspector: false });
 
+// On a phone the drawer covers the whole stage. Dengar and Pahami open on the stage itself (lyrics;
+// chord and Song Map), the panel one tap away; Racik and Stem open on their controls, because their
+// stage needs them first.
+const STAGE_FIRST = new Set<Mode>(['dengar', 'pahami']);
+
+/** Switches mode the same way from the tabs and the keys. */
+export function openMode(mode: Mode) {
+  const { ui } = getState();
+  setUi({ mode, inspector: isCompact() && STAGE_FIRST.has(mode) ? ui.inspector && ui.mode === mode : true, hidden: false });
+}
+
 // Shrinking the window to drawer size with both panels open keeps only the inspector.
 compactQuery?.addEventListener('change', (e) => {
   const { ui } = getState();

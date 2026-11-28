@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLyrics } from '../lyrics/lyrics';
 import { next, prev, seekBy, setVolume, toggleMute, togglePlay } from '../store/controller';
-import { closeDrawers, compactQuery, getState, runToastAction, setSettings, setUi } from '../store/player';
+import { closeDrawers, compactQuery, getState, openMode, runToastAction, setSettings, setUi, type Mode } from '../store/player';
 import { getStudio, setCompare } from '../studio/store';
 import { claimMediaKey } from './mediaSession';
 
@@ -24,6 +24,8 @@ export function useShortcuts() {
       const overlay = s.ui.settings || s.ui.calibration || s.ui.help;
       // A modal keeps the keys to itself: behind it nothing plays, seeks or switches; Esc (or ? for the guide) closes it.
       if ((s.ui.calibration || s.ui.help) && e.key !== 'Escape' && !(s.ui.help && e.key === '?')) return;
+      // A mode's key opens it; pressed again it goes back to Dengar.
+      const toggle = (m: Mode) => openMode(s.ui.mode === m ? 'dengar' : m);
       switch (e.key) {
         case ' ':
           if (e.target instanceof HTMLButtonElement) return;
@@ -76,13 +78,20 @@ export function useShortcuts() {
         case '3':
           setSettings({ world: 'aurora' });
           break;
+        case 'd':
+        case 'D':
+          openMode('dengar');
+          break;
         case 'u':
         case 'U':
-          setUi({ mode: s.ui.mode === 'pahami' ? 'dengar' : 'pahami', inspector: true, hidden: false });
+          toggle('pahami');
           break;
+        // R for Racik; B, its key from before the rename, still works.
+        case 'r':
+        case 'R':
         case 'b':
         case 'B':
-          setUi({ mode: s.ui.mode === 'bentuk' ? 'dengar' : 'bentuk', inspector: true, hidden: false });
+          toggle('bentuk');
           break;
         case 'a':
         case 'A':
@@ -106,7 +115,7 @@ export function useShortcuts() {
           break;
         case 's':
         case 'S':
-          setUi({ mode: s.ui.mode === 'stem' ? 'dengar' : 'stem', inspector: true, hidden: false });
+          toggle('stem');
           break;
         case 'o':
         case 'O':

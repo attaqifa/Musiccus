@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAnalysis } from '../analysis/manager';
 import { formatRate } from '../lib/format';
 import { TIER_LABEL, tierOf } from '../library/metadata';
-import { isCompact, setSettings, setUi, usePlayer, type Mode } from '../store/player';
+import { openMode, setSettings, setUi, usePlayer, type Mode } from '../store/player';
 import { FileInfo } from './FileInfo';
 import { fileQuality } from './fileQuality';
 import { cls } from './hooks';
@@ -23,13 +23,11 @@ export function BrandMark({ size = 22 }: { size?: number }) {
 }
 
 const MODES: { id: Mode; label: string; hint: string; kbd: string }[] = [
-  { id: 'dengar', label: 'Dengar', hint: 'Visual yang hidup mengikuti musik, dengan lirik yang bergerak di setiap kata.', kbd: 'U' },
+  { id: 'dengar', label: 'Dengar', hint: 'Visual yang hidup mengikuti musik, dengan lirik yang bergerak di setiap kata.', kbd: 'D' },
   { id: 'pahami', label: 'Pahami', hint: 'Kenali lagunya: tempo, kunci, akor, dan bagian-bagiannya.', kbd: 'U' },
-  { id: 'bentuk', label: 'Racik', hint: 'Atur rasa suara: bass lebih tebal, slowed + reverb, kecepatan, dan nada.', kbd: 'B' },
+  { id: 'bentuk', label: 'Racik', hint: 'Atur rasa suara: bass lebih tebal, slowed + reverb, kecepatan, dan nada.', kbd: 'R' },
   { id: 'stem', label: 'Stem', hint: 'Pisahkan vokal, drum, dan bass: untuk karaoke atau menikmati satu instrumen.', kbd: 'S' },
 ];
-
-const STAGE_FIRST = new Set<Mode>(['dengar', 'pahami']);
 
 /** The file's quality in one word (Hi-Res, Lossless, Lossy); click for the quality check. */
 function FormatPill() {
@@ -115,10 +113,7 @@ export function TopBar() {
               data-tip={m.hint}
               data-kbd={m.kbd}
               aria-keyshortcuts={m.kbd}
-              // On a phone the drawer covers the whole stage. Dengar and Pahami open on the stage
-              // itself (lyrics; chord and Song Map), the panel one tap away; Racik and Stem open on
-              // their controls, because their stage needs them first.
-              onClick={() => setUi({ mode: m.id, inspector: isCompact() && STAGE_FIRST.has(m.id) ? ui.inspector && ui.mode === m.id : true })}
+              onClick={() => openMode(m.id)}
             >
               {m.label}
             </button>
