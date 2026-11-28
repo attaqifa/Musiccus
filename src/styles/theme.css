@@ -1,8 +1,10 @@
 /*
- * Graphite Prism. Colour has three jobs and never swaps them:
+ * Graphite Prism. Colour has four jobs and never swaps them:
  *   interaction  signal white: buttons, knobs, active states (never changes)
  *   status       green = pure, yellow-orange = signal altered, red = problem
  *   expression   --key, the colour of the song's key, set live from the music
+ *   identity     one fixed soft colour per kind of section and per stem (ui/palette.ts):
+ *                it names a thing, never a state or an action
  */
 :root {
   color-scheme: dark;

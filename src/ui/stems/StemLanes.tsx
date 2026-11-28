@@ -4,11 +4,11 @@ import { formatTime } from '../../lib/format';
 import { stemGain } from '../../stems/mixer';
 import { getStems } from '../../stems/manager';
 import { useStems } from '../../stems/store';
-import { ENV_RATE, STEM_COLOR, STEM_LABEL, STEMS } from '../../stems/types';
+import { ENV_RATE, STEM_LABEL, STEMS } from '../../stems/types';
 import { seek } from '../../store/controller';
 import { setUi, usePlayer } from '../../store/player';
 import { useHubCanvas } from '../hooks';
-import { C, MONO } from '../palette';
+import { C, MONO, STEM_COLOR } from '../palette';
 
 const LABEL_W = 74;
 

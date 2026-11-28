@@ -11,18 +11,6 @@ export const STEM_LABEL: Record<StemId, string> = {
   other: 'Lainnya',
 };
 
-/**
- * Categorical identity colours. They name instruments, so unlike the key
- * colours they never move; they also stay clear of the status hues
- * (green = pure, amber = changed, red = problem).
- */
-export const STEM_COLOR: Record<StemId, string> = {
-  vocals: '#E6A3C4',
-  drums: '#8DB6E2',
-  bass: '#A99BEA',
-  other: '#9CCFC4',
-};
-
 export type SeparationEngine = 'ai' | 'dsp';
 
 /** htdemucs runs at 44.1 kHz; everything else stays at the file's own rate. */

@@ -7,23 +7,15 @@ import type { Analysis, Section } from '../../analysis/types';
 import { formatTime } from '../../lib/format';
 import { usePlayer } from '../../store/player';
 import { cls, useHub, useHubValue } from '../hooks';
+import { SECTION_COLOR, UNNAMED_SECTION } from '../palette';
 import { Term } from '../Tip';
 import { ChordPicker, KeyPicker, type ChordTarget } from './ChordFix';
 import { camelotTip, EXPLAIN } from './explain';
 
-// Categorical and deliberately soft, so sections never read as status colours.
-export const SECTION_COLORS = ['#B9A8E8', '#86B8DA', '#D9B48E', '#8FC7AE', '#DD9DB5', '#B8BE7E'];
-// One colour per kind of section, so every Chorus looks like every other Chorus.
-const NAMED_COLOR: Partial<Record<Section['name'], string>> = {
-  Intro: '#8FC7AE',
-  Verse: '#B9A8E8',
-  Chorus: '#D9B48E',
-  Puncak: '#DD9DB5',
-  Bridge: '#86B8DA',
-  Outro: '#B8BE7E',
-};
 export const sectionColor = (s: Pick<Section, 'name' | 'label'>) =>
-  NAMED_COLOR[s.name] ?? SECTION_COLORS[(s.label.charCodeAt(0) - 65) % SECTION_COLORS.length];
+  s.name === 'Bagian'
+    ? UNNAMED_SECTION[Math.abs(s.label.charCodeAt(0) - 65) % UNNAMED_SECTION.length]
+    : SECTION_COLOR[s.name];
 
 export function BeatDots() {
   const dots = useRef<(HTMLSpanElement | null)[]>([]);

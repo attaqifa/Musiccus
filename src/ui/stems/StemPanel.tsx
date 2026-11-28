@@ -4,14 +4,14 @@ import { engine } from '../../audio/engine';
 import { stemGain, type StemMix } from '../../stems/mixer';
 import { cancelSeparation, deleteModel, dropStems, exportStems, refreshModelStatus, separateCurrent, stemActivity, stemDb } from '../../stems/manager';
 import { activePreset, applyPreset, PRESETS, resetStage, setPosition, setStage, setStrip, useStems } from '../../stems/store';
-import { STEM_COLOR, STEM_LABEL, STEMS, type SeparationEngine, type StemId } from '../../stems/types';
+import { STEM_LABEL, STEMS, type SeparationEngine, type StemId } from '../../stems/types';
 import { useLive } from '../../live/store';
 import { usePlayer } from '../../store/player';
 import { ConfirmButton } from '../ConfirmButton';
 import { cls, useDragPointer, useHub, useHubCanvas } from '../hooks';
 import { Section } from '../Section';
 import { Knob } from '../Knob';
-import { C, MONO } from '../palette';
+import { C, MONO, STEM_COLOR } from '../palette';
 
 const num = (v: number, d = 1) => v.toFixed(d).replace('.', ',').replace('-', '−');
 const dbText = (v: number) => (v === 0 ? '0 dB' : `${v > 0 ? '+' : ''}${num(v)} dB`);
