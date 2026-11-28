@@ -215,7 +215,7 @@ const GUIDE: Record<Mode, { name: string; lede: string; parts: [string, string][
     lede: 'Visual yang hidup mengikuti musik. Tidak ada yang perlu diatur di sini; mode ini untuk mendengar.',
     parts: [
       ['Dunia visual', 'Nebula, Lanskap, atau Aurora, dipilih di bawah panggung. Warnanya mengikuti kunci lagu.'],
-      ['Lirik', 'Buka panelnya dari tombol mikrofon di atas, atau tampilkan liriknya bergerak di atas visual.'],
+      ['Lirik', 'Buka panelnya dari tombol panel kanan di atas, atau tampilkan liriknya bergerak di atas visual dengan tombol mikrofon di bar pemutar.'],
       ['Mode panggung', 'Sembunyikan semua kontrol dan biarkan visualnya mengisi layar.'],
       ['Antrean', 'Acak, ulang, dan timer tidur ada di tombol antrean.'],
     ],
