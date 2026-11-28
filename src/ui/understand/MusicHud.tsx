@@ -22,7 +22,8 @@ export function MusicHud() {
     const el = countdown.current;
     if (!el) return;
     const show = m.nextSection && m.timeToNext < 12;
-    const text = show ? `${Math.max(0, m.timeToNext).toFixed(1).replace('.', ',')} s` : '';
+    // Whole seconds, rounded up: a tenth-second ticker pulls the eye off the chord, and it never reads 0 early.
+    const text = show ? `${Math.max(1, Math.ceil(m.timeToNext))} s` : '';
     if (el.textContent !== text) el.textContent = text;
   });
 
