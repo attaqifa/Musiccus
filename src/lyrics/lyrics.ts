@@ -16,6 +16,7 @@ import { vocalLevels } from '../stems/manager';
 import { useStems } from '../stems/store';
 import { getFile } from '../store/controller';
 import { getState, toast, usePlayer, type Track } from '../store/player';
+import { DEMO_LRC } from './demo';
 import { cleanTitle, lookup, savedPick, savePick, type LrclibHit, type SongQuery } from './lrclib';
 import { estimateWords } from './timing';
 
@@ -32,7 +33,7 @@ export interface LyricLine {
   estimated?: boolean;
 }
 
-export type LyricsSource = 'lrc' | 'tag' | 'drop' | 'lrclib';
+export type LyricsSource = 'lrc' | 'tag' | 'drop' | 'lrclib' | 'demo';
 
 export interface Lyrics {
   /** Lines as the source gave them. Without timestamps, `t` is just the line number. */
@@ -217,10 +218,9 @@ async function load(trackId: string, force = false) {
   const st = useLyrics.getState();
   if (!force && (trackId in st.byTrack || st.state[trackId] === 'loading')) return;
   const t = getState().tracks[trackId];
-  if (!t || t.synth) {
-    setLyrics(trackId, null);
-    return;
-  }
+  if (!t) return setLyrics(trackId, null);
+  // The demo's lines are a tour written for it, so the first lyrics anyone meets are working ones.
+  if (t.synth) return setLyrics(trackId, { lines: parseLrc(DEMO_LRC), synced: true, source: 'demo' });
   setState(trackId, 'loading');
   if (t.live) return loadLive(t);
   try {

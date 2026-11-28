@@ -14,6 +14,7 @@ const SOURCE: Record<Lyrics['source'], string> = {
   tag: 'Tersimpan di dalam file lagu',
   drop: 'File .lrc yang Anda tambahkan',
   lrclib: 'LRCLIB',
+  demo: 'Panduan singkat untuk lagu demo',
 };
 
 function LyricsSearch({ nowId, onDone, focus = true }: { nowId: string; onDone: () => void; focus?: boolean }) {
@@ -158,8 +159,6 @@ export function LyricsPanel() {
   let body;
   if (!nowId) {
     body = <p className="empty-note pad">Putar lagu, dan liriknya muncul di sini, mengikuti setiap kata.</p>;
-  } else if (synth) {
-    body = <p className="empty-note pad">Lagu demo ini instrumental, jadi tidak punya lirik. Putar lagu Anda sendiri untuk melihat liriknya mengikuti setiap kata.</p>;
   } else if (state === 'loading' || (lyrics === undefined && state !== 'error')) {
     body = (
       <p className="empty-note pad lp-status">
@@ -278,7 +277,7 @@ export function LyricsPanel() {
             </>
           )}
           {estimated && 'Waktu per kata diperkirakan dari irama lagu'}
-          {estimated && (separated ? ' dan suara vokal.' : ' (lebih tepat setelah vokal dipisahkan dengan AI di mode Stem).')}
+          {estimated && (separated ? ' dan suara vokal.' : synth ? '.' : ' (lebih tepat setelah vokal dipisahkan dengan AI di mode Stem).')}
         </p>
       )}
     </aside>
