@@ -1495,6 +1495,14 @@ body.idle .stage-exit {
   padding: 2px 20px 18px;
 }
 
+/* Explanations read as sentences: no paragraph ends on one stranded word. Headings keep their balance. */
+.welcome,
+.inspector,
+.stem-hint,
+.toast {
+  text-wrap: pretty;
+}
+
 .insp-note {
   margin: -2px 0 12px;
   font-size: 13px;

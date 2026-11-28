@@ -54,7 +54,6 @@
   /* Type scale: 12 13 14 16 20 28 40, display sizes above that. */
   /* Three radii: controls, panels, and full round for pills and the play button. */
   --r-s: 8px;
-  --r-m: 8px;
   --r-l: 20px;
   --gap: 12px;
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
