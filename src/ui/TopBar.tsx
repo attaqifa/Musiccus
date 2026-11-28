@@ -105,24 +105,26 @@ export function TopBar() {
         <BrandMark />
         <span className="brand-name">Musiccus</span>
       </div>
-      <nav className="modes" aria-label="Mode">
-        {MODES.map((m) => (
-          <button
-            key={m.id}
-            className={cls('mode', m.id === ui.mode && 'active')}
-            aria-current={m.id === ui.mode ? 'page' : undefined}
-            data-tip={m.hint}
-            data-kbd={m.kbd}
-            aria-keyshortcuts={m.kbd}
-            // On a phone the drawer covers the whole stage. Dengar and Pahami open on the stage
-            // itself (lyrics; chord and Song Map), the panel one tap away; Racik and Stem open on
-            // their controls, because their stage needs them first.
-            onClick={() => setUi({ mode: m.id, inspector: isCompact() && STAGE_FIRST.has(m.id) ? ui.inspector && ui.mode === m.id : true })}
-          >
-            {m.label}
-          </button>
-        ))}
-      </nav>
+      {(hasTracks || hasNow) && (
+        <nav className="modes" aria-label="Mode">
+          {MODES.map((m) => (
+            <button
+              key={m.id}
+              className={cls('mode', m.id === ui.mode && 'active')}
+              aria-current={m.id === ui.mode ? 'page' : undefined}
+              data-tip={m.hint}
+              data-kbd={m.kbd}
+              aria-keyshortcuts={m.kbd}
+              // On a phone the drawer covers the whole stage. Dengar and Pahami open on the stage
+              // itself (lyrics; chord and Song Map), the panel one tap away; Racik and Stem open on
+              // their controls, because their stage needs them first.
+              onClick={() => setUi({ mode: m.id, inspector: isCompact() && STAGE_FIRST.has(m.id) ? ui.inspector && ui.mode === m.id : true })}
+            >
+              {m.label}
+            </button>
+          ))}
+        </nav>
+      )}
       <div className="tb-center">
         <FormatPill />
       </div>

@@ -1,10 +1,18 @@
-import { AppWindow, FolderClock, FolderOpen, Play } from 'lucide-react';
+import { AppWindow, ChevronRight, FolderClock, FolderOpen, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { tabCaptureSupported } from '../live/tab';
 import { formatTime } from '../lib/format';
 import { listenToTab, loadDemo, prepareDemo } from '../store/controller';
 import { lastSession, resumeListening, type LastSession } from '../store/session';
 import { pickFiles, pickFolder } from './pickers';
+
+/** What each mode does, in the words its tab uses; the tabs themselves wait for a song. */
+const MODES: [string, string][] = [
+  ['Dengar', 'Visual yang ikut setiap dentuman, dan lirik yang muncul kata demi kata.'],
+  ['Pahami', 'Kunci, tempo, akor, dan bagian lagu, dibaca langsung dari suaranya.'],
+  ['Racik', 'Bass lebih tebal, vokal lebih jelas, atau slowed + reverb, dengan satu klik.'],
+  ['Stem', 'Vokal, drum, dan bass dipisah: untuk karaoke atau menikmati satu instrumen.'],
+];
 
 export function Welcome() {
   const [last, setLast] = useState<LastSession | null>(null);
@@ -34,21 +42,14 @@ export function Welcome() {
             Dengar lebih <em>dalam.</em>
           </h1>
           <p className="wl-lede">
-            Putar lagu dari koleksi Anda, atau dengarkan tab Spotify dan YouTube Music lewat Musiccus. Visualnya ikut setiap dentuman,
-            liriknya muncul baris demi baris, dan rasa suaranya bisa Anda ganti dengan satu klik: bass lebih tebal, vokal lebih jelas,
-            atau suasana konser.
+            Putar lagu dari koleksi Anda, atau dengarkan tab Spotify dan YouTube Music lewat Musiccus. Setiap lagu bisa Anda dengar,
+            pahami, racik, dan pisahkan.
           </p>
           <div className="wl-actions">
             <button className="btn primary" onClick={pickFolder}>
               <FolderOpen size={17} aria-hidden="true" />
               Buka folder musik
             </button>
-            {canTab && (
-              <button className="btn" onClick={() => void listenToTab()} data-tip="Pilih tab yang sedang memutar musik, lalu nyalakan Bagikan juga audio tab">
-                <AppWindow size={17} aria-hidden="true" />
-                Dengar dari tab
-              </button>
-            )}
             {last && (
               <button
                 className="btn wl-resume"
@@ -64,10 +65,16 @@ export function Welcome() {
                 {last.point && last.point.time > 0 && <span className="wl-resume-at">{formatTime(last.point.time)}</span>}
               </button>
             )}
-            <button className="btn ghost" onClick={() => void loadDemo()}>
+            <button className="btn" onClick={() => void loadDemo()} data-tip="Lagu 40 detik yang sekaligus menunjukkan keempat mode, tanpa perlu file apa pun">
               <Play size={16} aria-hidden="true" />
               Coba lagu demo
             </button>
+            {canTab && (
+              <button className="btn" onClick={() => void listenToTab()} data-tip="Pilih tab yang sedang memutar musik, lalu nyalakan Bagikan juga audio tab">
+                <AppWindow size={17} aria-hidden="true" />
+                Dengar dari tab
+              </button>
+            )}
           </div>
           <p className="wl-hint">
             <span className="wl-drag-hint">Atau seret file dan folder ke mana saja di jendela ini. </span>
@@ -83,25 +90,39 @@ export function Welcome() {
               Edge di desktop.
             </p>
           )}
-          <dl className="wl-formats">
-            <div>
-              <dt>Diputar langsung</dt>
-              <dd>MP3, AAC, FLAC, WAV, AIFF, Opus, dan Vorbis. Lirik dicari otomatis kalau lagunya tidak membawa lirik sendiri.</dd>
-            </div>
-            {canTab && (
-              <div>
-                <dt>Dari tab</dt>
-                <dd>
-                  Spotify, YouTube Music, atau situs musik lain di tab sebelah. Pilih tabnya dan nyalakan "Bagikan juga audio tab". Tidak
-                  ada yang diunduh atau disimpan.
-                </dd>
+          <dl className="wl-modes" aria-label="Empat mode Musiccus">
+            {MODES.map(([name, text]) => (
+              <div key={name}>
+                <dt>{name}</dt>
+                <dd>{text}</dd>
               </div>
-            )}
-            <div>
-              <dt>Belum bisa diputar</dt>
-              <dd>ALAC, APE, WavPack, dan DSD. File ini tetap tampil di koleksi, tetapi dilewati saat memutar.</dd>
-            </div>
+            ))}
           </dl>
+          <details className="wl-more">
+            <summary>
+              <ChevronRight size={14} aria-hidden="true" />
+              Format yang bisa diputar
+            </summary>
+            <dl className="wl-formats">
+              <div>
+                <dt>Diputar langsung</dt>
+                <dd>MP3, AAC, FLAC, WAV, AIFF, Opus, dan Vorbis. Lirik dicari otomatis kalau lagunya tidak membawa lirik sendiri.</dd>
+              </div>
+              {canTab && (
+                <div>
+                  <dt>Dari tab</dt>
+                  <dd>
+                    Spotify, YouTube Music, atau situs musik lain di tab sebelah. Pilih tabnya dan nyalakan "Bagikan juga audio tab". Tidak
+                    ada yang diunduh atau disimpan.
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt>Belum bisa diputar</dt>
+                <dd>ALAC, APE, WavPack, dan DSD. File ini tetap tampil di koleksi, tetapi dilewati saat memutar.</dd>
+              </div>
+            </dl>
+          </details>
         </div>
       </section>
     </>

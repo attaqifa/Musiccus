@@ -1431,25 +1431,77 @@ body.idle .stage-exit {
   color: var(--ink-3);
 }
 
+/* What the four modes do: the reason to stay, read after the way in. */
+.wl-modes,
 .wl-formats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 280px));
-  gap: 28px;
-  margin: 56px 0 0;
+  gap: 22px 28px;
+  margin: 48px 0 0;
   max-width: 600px;
 }
 
+.wl-modes {
+  animation: rise 1s 0.32s var(--ease-out) both;
+}
+
+.wl-modes dt,
 .wl-formats dt {
   font-size: 14px;
   color: var(--ink);
   font-weight: 500;
 }
 
+.wl-modes dd,
 .wl-formats dd {
   margin: 4px 0 0;
   font-size: 13px;
   color: var(--ink-3);
   line-height: 1.55;
+}
+
+/* The format list is reference, not the pitch: folded under one line. */
+.wl-more {
+  margin-top: 28px;
+  max-width: 600px;
+  animation: rise 1s 0.4s var(--ease-out) both;
+}
+
+.wl-more summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  font-size: 13px;
+  color: var(--ink-3);
+  cursor: pointer;
+  list-style: none;
+}
+
+.wl-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.wl-more summary svg {
+  transition: transform 0.2s var(--ease-out);
+}
+
+.wl-more[open] summary svg {
+  transform: rotate(90deg);
+}
+
+.wl-more summary:hover,
+.wl-more[open] summary {
+  color: var(--ink-2);
+}
+
+.wl-more .wl-formats {
+  margin-top: 16px;
+}
+
+/* Reference sits a step below the modes. */
+.wl-more .wl-formats dt {
+  color: var(--ink-2);
 }
 
 /* ---------------------------------------------------------- Inspector -- */
@@ -5593,6 +5645,7 @@ button.fx-power:focus-visible {
     grid-area: right;
     justify-content: flex-end;
   }
+  .wl-modes,
   .wl-formats {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
