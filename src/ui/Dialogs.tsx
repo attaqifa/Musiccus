@@ -234,9 +234,10 @@ const GUIDE: Record<Mode, { name: string; lede: string; parts: [string, string][
   },
   bentuk: {
     name: 'Racik',
-    lede: 'Atur rasa suara tanpa merusak aslinya. Mulai dari preset; buka Rack kalau ingin mengatur sendiri.',
+    lede: 'Atur rasa suara tanpa merusak aslinya. Mulai dari preset, condongkan dengan Sesuaikan, dan buka Rack kalau ingin mengatur semuanya sendiri.',
     parts: [
       ['Pilih rasa', 'Satu klik, langsung terdengar. Setiap preset mulai dari suara asli.'],
+      ['Sesuaikan', 'Bass, vokal, ruang, dan lebar, satu geser masing-masing. Tanda kecil di garis adalah suara asli; klik ganda untuk kembali ke sana.'],
       ['Rack', 'EQ, kompresor, ruang, dan modul lainnya, terlipat sampai Anda membukanya. Klik nama modul untuk menyalakan dan membuka pengaturannya, klik lampunya untuk mematikan.'],
       ['Knob', 'Seret naik atau turun untuk mengubah, klik ganda untuk kembali ke nilai awal.'],
       ['Dengar asli', 'Tombol Asli di bar pemutar memutar suara asli dengan volume yang disamakan, supaya perbandingannya adil. Klik untuk berganti, atau tahan sesaat.'],

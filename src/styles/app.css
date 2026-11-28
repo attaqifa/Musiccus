@@ -3524,6 +3524,98 @@ button.q-row:hover {
   background: var(--raised-2);
 }
 
+/* Racik's plain layer: one line per slider, the value in words on the right. */
+.macros {
+  display: grid;
+  gap: 10px;
+}
+
+.macro-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.macro-head output {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.macro.moved .macro-head output {
+  color: var(--ink-2);
+}
+
+/* A bipolar track: the fill runs from the mark (the song as it is) to the thumb. Positions are thumb
+   centres, which travel from half a thumb in from either end. */
+.macro-track {
+  position: relative;
+  --thumb: 16px;
+  --at-lo: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--lo));
+  --at-hi: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--hi));
+}
+
+.macro-track::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--mark));
+  top: calc(50% + 5px);
+  width: 1px;
+  height: 5px;
+  background: var(--ink-3);
+  pointer-events: none;
+}
+
+.macro-track input {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  background: transparent;
+  cursor: pointer;
+}
+
+.macro-track input::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--line-3) var(--at-lo), var(--signal) 0 var(--at-hi), var(--line-3) 0);
+}
+
+.macro-track input::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--line-3) var(--at-lo), var(--signal) 0 var(--at-hi), var(--line-3) 0);
+}
+
+.macro-track input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((4px - var(--thumb)) / 2);
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.45);
+}
+
+.macro-track input::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 0;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.45);
+}
+
+@media (pointer: coarse) {
+  .macro-track {
+    --thumb: 22px;
+  }
+  .macro-track::after {
+    top: calc(50% + 8px);
+  }
+}
+
 .preset-note {
   margin: 10px 4px 0;
   font-size: 12px;

@@ -2,6 +2,7 @@ import { Download, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { useLive } from '../../live/store';
 import { exportCurrentTrack } from '../../studio/export';
+import { MACROS, setMacro } from '../../studio/macros';
 import { PRESETS } from '../../studio/presets';
 import { applyMix, applyPreset, deleteMix, MAX_MIXES, saveMix, soundLabel, useStudio } from '../../studio/store';
 import { studioProcessing } from '../../studio/types';
@@ -55,7 +56,7 @@ function Presets() {
         <p className="preset-note" aria-live="polite">
           {tweaked ? (
             <>
-              <b>{note.name}</b>, lalu disesuaikan di rack.
+              <b>{note.name}</b>, lalu disesuaikan.
             </>
           ) : (
             <>
@@ -65,6 +66,47 @@ function Presets() {
         </p>
       )}
     </>
+  );
+}
+
+/**
+ * Four plain sliders between the presets and the rack. The small mark on each is the song as it
+ * is; a double-click goes back to it. The value reads as words, the rack keeps the numbers.
+ */
+function Macros() {
+  const state = useStudio((s) => s.state);
+  return (
+    <div className="macros">
+      {MACROS.map((m) => {
+        const v = Math.min(m.max, Math.max(m.min, m.read(state)));
+        const said = m.say(v);
+        const id = `macro-${m.id}`;
+        // The fill runs from the song as it is to the value, like a bipolar knob: it shows the change, not the amount.
+        const mark = (m.neutral - m.min) / (m.max - m.min);
+        const at = (v - m.min) / (m.max - m.min);
+        return (
+          <div key={m.id} className={cls('macro', said !== 'Asli' && 'moved')} data-tip={`${m.hint} Klik ganda untuk kembali ke asli.`}>
+            <label className="macro-head" htmlFor={id}>
+              <span>{m.label}</span>
+              <output htmlFor={id}>{said}</output>
+            </label>
+            <div className="macro-track" style={{ '--mark': mark, '--lo': Math.min(mark, at), '--hi': Math.max(mark, at) } as React.CSSProperties}>
+              <input
+                id={id}
+                type="range"
+                min={m.min}
+                max={m.max}
+                step={m.step}
+                value={v}
+                aria-valuetext={said}
+                onChange={(e) => setMacro(m, Number(e.target.value))}
+                onDoubleClick={() => setMacro(m, m.neutral)}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -156,6 +198,9 @@ export function StudioPanel() {
     <aside className="inspector studio panel" aria-label="Racik suara">
       <Section id="s-presets" title="Pilih rasa" hint="Satu klik, langsung terdengar. Setiap preset mulai dari suara asli.">
         <Presets />
+      </Section>
+      <Section id="s-macros" title="Sesuaikan" hint="Geser untuk mencondongkan rasa yang dipilih. Tanda kecil di setiap garis adalah suara asli.">
+        <Macros />
       </Section>
       {/* The studio layer: folded until the listener opens it once, then remembered. */}
       <Section
