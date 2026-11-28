@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FocusEvent, type KeyboardEvent, type PointerEvent } from 'react';
 import { chordsFor } from '../../analysis/chordView';
 import { useAnalysis } from '../../analysis/manager';
 import { chordName, pitchColor, rgbCss } from '../../analysis/theory';
@@ -95,7 +95,10 @@ function MapCanvas({ analysis }: { analysis: Analysis }) {
   const layer = useRef<HTMLCanvasElement | null>(null);
   const layerKey = useRef('');
   const hoverX = useRef<number | null>(null);
-  const [tip, setTip] = useState<{ x: number; text: string } | null>(null);
+  const [tip, setTip] = useState<{ x: number; text: string; edge: 'start' | 'mid' | 'end' } | null>(null);
+  const [at, setAt] = useState(0);
+  const tipTimer = useRef(0);
+  const howId = useId();
   const chords = chordsFor(analysis, usePlayer((s) => s.settings.chordView));
 
   const canvas = useHubCanvas((ctx, w, h, s) => {
@@ -148,32 +151,88 @@ function MapCanvas({ analysis }: { analysis: Analysis }) {
   useEffect(() => {
     layerKey.current = '';
   }, [analysis, chords]);
+  useEffect(() => () => window.clearTimeout(tipTimer.current), []);
+
+  // One moment of the map in words: its time, its section, its chord.
+  const describe = (t: number) => {
+    const sec = analysis.sections.find((s) => t >= s.t && t < s.end);
+    const ch = chords.find((c) => t >= c.t && t < c.end);
+    return [formatTime(t), sec ? sectionTitle(sec.name, sec.label) : null, ch ? chordName(ch, analysis.key) : null].filter(Boolean).join(' · ');
+  };
+  // Near either end the tip hangs inward, so it never runs off the stage.
+  const showTip = (x: number, w: number, text: string) =>
+    setTip({ x, text, edge: x < w * 0.18 ? 'start' : x > w * 0.82 ? 'end' : 'mid' });
 
   const timeAt = (e: { currentTarget: HTMLDivElement; clientX: number }) => {
     const r = e.currentTarget.getBoundingClientRect();
     const x = Math.max(0, Math.min(r.width, e.clientX - r.left));
-    return { x, t: (x / r.width) * analysis.duration };
+    return { x, w: r.width, t: (x / r.width) * analysis.duration };
   };
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
-    const { x, t } = timeAt(e);
+    window.clearTimeout(tipTimer.current);
+    const { x, w, t } = timeAt(e);
     hoverX.current = x;
-    const sec = analysis.sections.find((s) => t >= s.t && t < s.end);
-    const ch = chords.find((c) => t >= c.t && t < c.end);
-    setTip({
-      x,
-      text: [formatTime(t), sec ? sectionTitle(sec.name, sec.label) : null, ch ? chordName(ch, analysis.key) : null].filter(Boolean).join(' · '),
-    });
+    showTip(x, w, describe(t));
   };
   const onLeave = () => {
+    window.clearTimeout(tipTimer.current);
     hoverX.current = null;
     setTip(null);
   };
+  // A keyboard move says where it landed for a moment, then the map is the map again.
+  const landed = (el: HTMLDivElement, t: number, extra?: string) => {
+    const w = el.getBoundingClientRect().width;
+    setAt(t);
+    showTip((t / analysis.duration) * w, w, extra ? `${describe(t)} · ${extra}` : describe(t));
+    window.clearTimeout(tipTimer.current);
+    tipTimer.current = window.setTimeout(() => setTip(null), 3000);
+  };
+  // From the keyboard the map moves the way it is drawn: a section at a time. Left goes back to the
+  // start of this section, or to the one before when the playhead is already near its start.
+  const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    const now = engine.position()?.time ?? 0;
+    const secs = analysis.sections;
+    let t: number | undefined;
+    if (e.key === 'ArrowRight') t = secs.find((s) => s.t > now + 0.5)?.t;
+    else if (e.key === 'ArrowLeft') t = secs.findLast((s) => s.t < now - 2)?.t ?? 0;
+    else if (e.key === 'Home') t = 0;
+    else if (e.key === 'End') t = secs[secs.length - 1]?.t;
+    else return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (t === undefined) return;
+    seek(t);
+    landed(e.currentTarget, t);
+  };
+  // Only a keyboard arrival shows the keys; a click has already seeked.
+  const onFocus = (e: FocusEvent<HTMLDivElement>) => {
+    if (e.currentTarget.matches(':focus-visible')) landed(e.currentTarget, engine.position()?.time ?? 0, '← → pindah bagian');
+  };
 
   return (
-    <div className="songmap-canvas" onPointerMove={onMove} onPointerLeave={onLeave} onClick={(e) => seek(timeAt(e).t)}>
-      <canvas ref={canvas} role="img" aria-label="Peta lagu: bagian, akor, dan kurva energi. Klik untuk melompat." />
+    <div
+      className="songmap-canvas"
+      role="slider"
+      tabIndex={0}
+      aria-label="Peta lagu"
+      aria-describedby={howId}
+      aria-valuemin={0}
+      aria-valuemax={Math.round(analysis.duration)}
+      aria-valuenow={Math.round(at)}
+      aria-valuetext={describe(at)}
+      onPointerMove={onMove}
+      onPointerLeave={onLeave}
+      onClick={(e) => seek(timeAt(e).t)}
+      onKeyDown={onKey}
+      onFocus={onFocus}
+      onBlur={onLeave}
+    >
+      <canvas ref={canvas} aria-hidden="true" />
+      <span id={howId} className="sr-only">
+        Bagian, akor, dan kurva energi lagu. Panah kiri dan kanan pindah ke bagian sebelum dan sesudahnya.
+      </span>
       {tip && (
-        <span className="ws-tip" style={{ left: tip.x, bottom: 'auto', top: -26 }}>
+        <span className={`ws-tip ${tip.edge}`} style={{ left: tip.x, bottom: 'auto', top: -26 }}>
           {tip.text}
         </span>
       )}

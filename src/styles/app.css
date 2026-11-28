@@ -2737,6 +2737,14 @@ button.q-row:hover {
   height: 100%;
 }
 
+.songmap-canvas .ws-tip.start {
+  transform: translateX(-8px);
+}
+
+.songmap-canvas .ws-tip.end {
+  transform: translateX(calc(-100% + 8px));
+}
+
 .stage-mode .songmap,
 .stage-mode .music-hud {
   opacity: 0;
