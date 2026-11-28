@@ -127,8 +127,14 @@ p {
 input[type='range'] {
   width: 100%;
   accent-color: var(--signal);
-  height: 20px;
+  height: 24px;
   margin: 0;
+}
+
+@media (pointer: coarse) {
+  input[type='range'] {
+    height: 40px;
+  }
 }
 
 kbd {
