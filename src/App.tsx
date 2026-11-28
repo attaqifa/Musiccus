@@ -16,10 +16,34 @@ import { LyricsOverlay } from './ui/LyricsOverlay';
 import { LyricsPanel } from './ui/LyricsPanel';
 import { Welcome } from './ui/Welcome';
 
-// Each mode's views load the first time that mode is opened, so the first
-// visit only downloads what listening needs.
-const named = <T,>(load: () => Promise<T>, key: keyof T) =>
-  lazy(async () => ({ default: (await load())[key] as React.ComponentType }));
+// Each mode's views are their own download, so the first visit only fetches what
+// listening needs. Once a song is playing, the rest come in while the browser is idle,
+// so the first switch to a mode does not wait on the network. A failed fetch is
+// forgotten, so the next attempt (preload or render) tries again.
+const chunks: Array<() => Promise<unknown>> = [];
+const named = <T,>(load: () => Promise<T>, key: keyof T) => {
+  let pending: Promise<T> | undefined;
+  const once = () =>
+    (pending ??= load().catch((err) => {
+      pending = undefined;
+      throw err;
+    }));
+  chunks.push(once);
+  return lazy(async () => ({ default: (await once())[key] as React.ComponentType }));
+};
+
+function usePreloadModes(ready: boolean) {
+  useEffect(() => {
+    if (!ready) return;
+    const warm = () => chunks.forEach((c) => void c().catch(() => {}));
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(warm, { timeout: 4000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(warm, 1500);
+    return () => clearTimeout(id);
+  }, [ready]);
+}
 const StudioPanel = named(() => import('./ui/studio/StudioPanel'), 'StudioPanel');
 const StemLanes = named(() => import('./ui/stems/StemLanes'), 'StemLanes');
 const StemPanel = named(() => import('./ui/stems/StemPanel'), 'StemPanel');
@@ -40,6 +64,7 @@ export default function App() {
   const understand = ui.mode === 'pahami';
   const shape = ui.mode === 'bentuk';
   const stem = ui.mode === 'stem';
+  usePreloadModes(hasNow);
 
   useEffect(() => {
     void initEngine();
@@ -69,21 +94,24 @@ export default function App() {
       )}
       <main className={cls('center', meters && 'with-meters')} aria-label="Panggung" data-world={world}>
         <ErrorBoundary resetKey={`${ui.mode}:${ui.sonicMap}`} className="crash-center">
-        <Suspense fallback={null}>
           {hasTracks && ui.sonicMap ? (
-            <SonicMap />
+            <Suspense fallback={null}>
+              <SonicMap />
+            </Suspense>
           ) : (
             <>
               {hasNow && <WorldSwitcher />}
               {!hasTracks && <Welcome />}
-              {understand && hasNow && <MusicHud />}
+              {/* Each lazy view waits on its own, so the switcher and the overlays never blink out with it. */}
+              <Suspense fallback={null}>{understand && hasNow && <MusicHud />}</Suspense>
               {hasNow && <LyricsOverlay />}
               {/* Racik's stage is just the visuals and lyrics; the title is already in the transport. */}
-              {understand && hasNow ? <SongMap /> : stem && hasNow ? <StemLanes /> : shape ? null : <NowPlayingOverlay />}
-              {meters && <MeterBridge />}
+              <Suspense fallback={null}>
+                {understand && hasNow ? <SongMap /> : stem && hasNow ? <StemLanes /> : shape ? null : <NowPlayingOverlay />}
+              </Suspense>
+              <Suspense fallback={null}>{meters && <MeterBridge />}</Suspense>
             </>
           )}
-        </Suspense>
         </ErrorBoundary>
       </main>
       {hasTracks && ui.inspector && (
