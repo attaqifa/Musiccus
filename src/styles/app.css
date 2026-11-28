@@ -5019,16 +5019,11 @@ button.fx-power:focus-visible {
   transition: width 0.3s ease;
 }
 
-/* Before separation the meters have nothing to show and the knobs wait; the names stay readable. */
-.strips.pending .strip-meter,
-.strips.pending .knob {
+/* Before separation the meters have nothing to show, so they wait at half strength. The knobs keep full
+   contrast: they already work, and what is set applies the moment the stems are ready. */
+.strips.pending .strip-meter {
   opacity: 0.45;
   transition: opacity 0.3s var(--ease-out);
-}
-
-.strips.pending:hover .knob,
-.strips.pending:focus-within .knob {
-  opacity: 0.8;
 }
 
 /* With the panel closed and nothing separated: one quiet prompt, not a card. */
