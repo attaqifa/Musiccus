@@ -1,4 +1,4 @@
-import { Activity, CircleHelp, Eye, MicVocal, PanelLeft, PanelRight, Settings2 } from 'lucide-react';
+import { Activity, CircleHelp, Eye, PanelLeft, PanelRight, Settings2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAnalysis } from '../analysis/manager';
 import { formatRate } from '../lib/format';
@@ -151,7 +151,8 @@ export function TopBar() {
           data-tip={ui.mode === 'dengar' ? 'Panel lirik' : 'Panel kanan'}
           data-kbd="I"
         >
-          {ui.mode === 'dengar' ? <MicVocal size={17} /> : <PanelRight size={17} />}
+          {/* The same panel icon in every mode, mirroring the library's; the microphone means lyrics over the visual. */}
+          <PanelRight size={17} />
         </button>
         {hasNow && (
           <button
