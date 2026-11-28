@@ -29,6 +29,8 @@ const MODES: { id: Mode; label: string; hint: string; kbd: string }[] = [
   { id: 'stem', label: 'Stem', hint: 'Pisahkan vokal, drum, dan bass: untuk karaoke atau menikmati satu instrumen.', kbd: 'S' },
 ];
 
+const STAGE_FIRST = new Set<Mode>(['dengar', 'pahami']);
+
 /** The file's quality in one word (Hi-Res, Lossless, Lossy); click for the quality check. */
 function FormatPill() {
   const now = usePlayer((s) => s.now);
@@ -112,9 +114,10 @@ export function TopBar() {
             data-tip={m.hint}
             data-kbd={m.kbd}
             aria-keyshortcuts={m.kbd}
-            // On a phone the lyrics drawer would cover the visual; Dengar shows
-            // the lyrics over the stage instead, so only the tool modes open it.
-            onClick={() => setUi({ mode: m.id, inspector: m.id === 'dengar' && isCompact() ? ui.inspector && ui.mode === 'dengar' : true })}
+            // On a phone the drawer covers the whole stage. Dengar and Pahami open on the stage
+            // itself (lyrics; chord and Song Map), the panel one tap away; Racik and Stem open on
+            // their controls, because their stage needs them first.
+            onClick={() => setUi({ mode: m.id, inspector: isCompact() && STAGE_FIRST.has(m.id) ? ui.inspector && ui.mode === m.id : true })}
           >
             {m.label}
           </button>

@@ -77,6 +77,15 @@
   height: 100vh;
   display: block;
   z-index: 0;
+  transition: opacity 0.6s var(--ease-out);
+}
+
+/* In Pahami and Stem the visual is the backdrop, not the subject: it steps back so the HUD, the
+   Song Map and the lanes lead. Racik keeps it at full strength, because there the visual is the
+   sound being shaped, and so does stage mode, where nothing else is left. Opacity only: no GPU cost. */
+.mode-pahami:not(.stage-mode) .stage-canvas,
+.mode-stem:not(.stage-mode) .stage-canvas {
+  opacity: 0.6;
 }
 
 .stage-veil {
@@ -130,6 +139,12 @@
 
 .stage-mode::before {
   opacity: 0;
+}
+
+/* With the panels gone the stage takes the whole width, so the title and the lyrics sit on the
+   window, not on the gap the hidden panels left behind. */
+.stage-mode .center {
+  grid-column: 1 / -1;
 }
 
 .stage-exit {
@@ -4405,6 +4420,28 @@ button.fx-power:focus-visible {
   --pulse: 0;
 }
 
+/* Entering or leaving stage mode moves the lyrics' centre; they fade in there instead of sliding.
+   Two names with one body, so the switch either way restarts the fade. */
+.center > .lyrics {
+  animation: ly-settle 0.5s var(--ease-out);
+}
+
+.stage-mode .center > .lyrics {
+  animation-name: ly-settle-stage;
+}
+
+@keyframes ly-settle {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes ly-settle-stage {
+  from {
+    opacity: 0;
+  }
+}
+
 .kinetic .ly-cur {
   font-size: clamp(26px, 3.6vw, 46px);
   transform: scale(calc(1 + var(--pulse) * 0.022));
@@ -5517,10 +5554,10 @@ button.fx-power:focus-visible {
   }
   /* Between phone and desktop a drawer covers part of the stage: the title,
      lyrics, HUD and lanes keep to the part that stays visible. */
-  .app.with-library .center {
+  .app.with-library:not(.stage-mode) .center {
     --stage-l: 372px;
   }
-  .app.with-inspector .center {
+  .app.with-inspector:not(.stage-mode) .center {
     --stage-r: 372px;
   }
   .drawer-scrim {
@@ -5565,8 +5602,8 @@ button.fx-power:focus-visible {
 @media (max-width: 560px) {
   /* Mode tabs drop to their own full-width row under the brand and actions. */
   /* A drawer covers the whole stage on a phone; nothing to make room for. */
-  .app.with-library .center,
-  .app.with-inspector .center {
+  .app.with-library:not(.stage-mode) .center,
+  .app.with-inspector:not(.stage-mode) .center {
     --stage-l: 0px;
     --stage-r: 0px;
   }
